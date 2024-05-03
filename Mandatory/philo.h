@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/02 19:43:15 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/03 18:38:01 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ typedef struct s_philos
     int time_to_eat;
     int time_to_sleep;
     int time_to_die;
+    pthread_t thread;
     // int number_times;
     struct s_philos *next;
 } t_philos;
