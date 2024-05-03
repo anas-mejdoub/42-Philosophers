@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/02 19:58:01 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/03 12:52:11 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,17 @@ int ft_atoi(char *str)
         i++;
     }
     return (res * sign);
+}
+
+t_philos *get_by_index(t_philos *philos, int index)
+{
+    while (philos)
+    {
+        if (philos->index == index)
+            return (philos);
+        philos = philos->next;
+    }
+    return (NULL);
 }
 
 t_philos *get_last_philo(t_philos *philos)
@@ -83,6 +94,7 @@ void fill_philos(char *data[], t_philos **philos)
 void simulation(char *data[])
 {
     t_philos *philos;
+
     philos = NULL;
     fill_philos(data, &philos);
     while (philos)
