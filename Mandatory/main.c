@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/04 19:28:08 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/04 19:45:54 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,16 +102,16 @@ void *action(void *philos)
 {
     t_philos *ph = (t_philos *)philos;
 
-	if (!ph->data)
-		printf("err %d \n", ph->index);
 	pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
 	printf("%d has taken a fork\n", ph->index);
 	pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
 	printf("%d has taken a fork\n", ph->index);
 	printf("%d is eating\n", ph->index);
-	usleep(200);
+	usleep(ph->time_to_eat);
 	pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
 	pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
+	printf("%d is sleeping\n", ph->index);
+	usleep(ph->time_to_sleep);
     return (NULL);
 }
 void init_mutex(t_data *data)
@@ -121,7 +121,7 @@ void init_mutex(t_data *data)
 	data->forks = malloc(sizeof(pthread_mutex_t) * data->philos_number);
 	if (!data->forks)
 	{
-		printf ("err \n");
+		printf("err \n");
 		exit(77);
 	}
 	while (i < data->philos_number)
