@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/04 15:24:25 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/04 17:09:49 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <pthread.h>
+typedef struct s_data
+{
+    int philos_number;
+    pthread_mutex_t *forks;
+} t_data;
 typedef struct s_philos
 {
     int index;
@@ -24,9 +29,13 @@ typedef struct s_philos
     int time_to_sleep;
     int time_to_die;
     int eating;
+    int left_fork;
+    int right_fork;
     pthread_t thread;
-    // int number_times;
+    t_data *data;
     struct s_philos *next;
 } t_philos;
+
+
 
 #endif
