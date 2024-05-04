@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/03 19:10:30 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/04 15:25:44 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ t_philos	*new_philo(char *data[], int index)
 	new->time_to_die = ft_atoi(data[1]);
 	new->time_to_eat = ft_atoi(data[2]);
 	new->time_to_sleep = ft_atoi(data[3]);
+    new->eating = 0;
 	new->next = NULL;
 	return (new);
 }
@@ -96,10 +97,18 @@ void	fill_philos(char *data[], t_philos **philos)
 
 void *action(void *philos)
 {
-    // philos = (t_philos *)philos;
-    // (void)philos;
-    
-    printf("is eating\n");
+    // pthread_mutex_t mutex;
+    t_philos *ph = (t_philos *)philos;
+
+    if (ph && !ph->eating && ph->next && !ph->next->eating)
+    {
+		usleep(200);
+        ph->eating = 1;
+        ph->next->eating = 1;
+		printf ("%d is eating\n", ph->index);
+		ph->eating = 0;
+		ph->next->eating = 0;
+    }
     return (NULL);
 }
 
@@ -107,7 +116,6 @@ void *action(void *philos)
 void	simulation(char *data[])
 {
 	t_philos	*philos;
-	// pthread_t	threads[ft_atoi(data[0])];
 
 	philos = NULL;
 	fill_philos(data, &philos);
@@ -117,12 +125,7 @@ void	simulation(char *data[])
         pthread_join(philos->thread, NULL);
         philos = philos->next;
     }
-	// while (philos)
-	// {
-	//     printf("%d %d %d %d  \n", philos->index, philos->time_to_die,
-		// philos->time_to_eat, philos->time_to_sleep);
-	//     philos = philos->next;
-	// }
+
 }
 
 int	main(int argc, char *argv[])
