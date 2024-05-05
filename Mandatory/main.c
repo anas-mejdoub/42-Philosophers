@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/05 12:34:26 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/05 14:27:31 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,12 @@ t_philos	*get_last_philo(t_philos *philos)
 	}
 	return (philos);
 }
-
+void print(t_philos *philos, char *msg)
+{
+	pthread_mutex_lock(&philos->data->print);
+	printf("%d %s", philos->index, msg);
+	pthread_mutex_unlock(&philos->data->print);
+}
 t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 {
 	t_philos	*new;
@@ -129,24 +134,25 @@ void *action(void *philos)
     t_philos *ph = (t_philos *)philos;
 	while (1)
 	{
-		if (ph->left_fork < ph->right_fork) {
+		if (ph->right_fork < ph->left_fork) {
 			pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
-			printf("%d has taken a fork\n", ph->index);
+			print(ph, "has taken a fork\n");
 			pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
-			printf("%d has taken a fork\n", ph->index);
+			print(ph, "has taken a fork\n");
+			print(ph, "is eating\n");
+			usleep(ph->time_to_eat);
 		} else {
 			pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
-			printf("%d has taken a fork\n", ph->index);
+			print(ph, "has taken a fork\n");
 			pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
-			printf("%d has taken a fork\n", ph->index);
+			print(ph, "has taken a fork\n");
+			print(ph, "is eating\n");
+			usleep(ph->time_to_eat);
 		}
-
-		printf("%d is eating\n", ph->index);
-		usleep(ph->time_to_eat);
-
+		// usleep(ph->time_to_eat);
 		pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
 		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
-		printf("%d is sleeping\n", ph->index);
+		print(ph, "is sleeping\n");
 		usleep(ph->time_to_sleep);
 		break;
 	}
@@ -155,7 +161,6 @@ void *action(void *philos)
 void init_mutex(t_data *data)
 {
 	int i = 0;
-
 
 	data->forks = malloc(sizeof(pthread_mutex_t) * data->philos_number);
 	if (!data->forks)
@@ -168,6 +173,7 @@ void init_mutex(t_data *data)
 		pthread_mutex_init(&data->forks[i], NULL);
 		i++;
 	}
+	pthread_mutex_init(&data->print, NULL);
 }
 
 void initial_data(t_philos *philos , t_data *shared_data)
