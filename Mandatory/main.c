@@ -6,11 +6,19 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/04 19:45:54 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/05 11:34:26 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+long long	get_time(void)
+{
+	struct timeval	time;
+
+	gettimeofday(&time, NULL);
+	return (time.tv_sec * 1000 + time.tv_usec / 1000);
+}
 
 int	ft_atoi(char *str)
 {
@@ -114,9 +122,11 @@ void *action(void *philos)
 	usleep(ph->time_to_sleep);
     return (NULL);
 }
+
 void init_mutex(t_data *data)
 {
 	int i = 0;
+
 
 	data->forks = malloc(sizeof(pthread_mutex_t) * data->philos_number);
 	if (!data->forks)
@@ -130,6 +140,7 @@ void init_mutex(t_data *data)
 		i++;
 	}
 }
+
 void initial_data(t_philos *philos , t_data *shared_data)
 {
 	while (philos)
@@ -138,6 +149,7 @@ void initial_data(t_philos *philos , t_data *shared_data)
 		philos = philos->next;
 	}
 }
+
 void	simulation(char *data[])
 {
 	t_philos	*philos;
