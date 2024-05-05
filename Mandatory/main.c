@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/05 11:34:26 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/05 12:34:26 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,6 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 	if (!new)
 		return (NULL);
 	new->index = index + 1;
-	// new->data->philos_number = index + 1;
 	shared_data->philos_number++;
 	new->time_to_die = ft_atoi(data[1]);
 	new->time_to_eat = ft_atoi(data[2]);
@@ -106,23 +105,53 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 	}
 }
 
+// void *action(void *philos)
+// {
+//     t_philos *ph = (t_philos *)philos;
+// 	while (1)
+// 	{
+// 		pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
+// 		pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
+// 		printf("%d has taken a fork\n", ph->index);
+// 		printf("%d has taken a fork\n", ph->index);
+// 		printf("%d is eating\n", ph->index);
+// 		usleep(ph->time_to_eat);
+// 		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
+// 		pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
+// 		printf("%d is sleeping\n", ph->index);
+// 		usleep(ph->time_to_sleep);
+// 		// break;
+// 	}
+//     return (NULL);
+// }
 void *action(void *philos)
 {
     t_philos *ph = (t_philos *)philos;
+	while (1)
+	{
+		if (ph->left_fork < ph->right_fork) {
+			pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
+			printf("%d has taken a fork\n", ph->index);
+			pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
+			printf("%d has taken a fork\n", ph->index);
+		} else {
+			pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
+			printf("%d has taken a fork\n", ph->index);
+			pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
+			printf("%d has taken a fork\n", ph->index);
+		}
 
-	pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
-	printf("%d has taken a fork\n", ph->index);
-	pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
-	printf("%d has taken a fork\n", ph->index);
-	printf("%d is eating\n", ph->index);
-	usleep(ph->time_to_eat);
-	pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
-	pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
-	printf("%d is sleeping\n", ph->index);
-	usleep(ph->time_to_sleep);
+		printf("%d is eating\n", ph->index);
+		usleep(ph->time_to_eat);
+
+		pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
+		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
+		printf("%d is sleeping\n", ph->index);
+		usleep(ph->time_to_sleep);
+		break;
+	}
     return (NULL);
 }
-
 void init_mutex(t_data *data)
 {
 	int i = 0;
@@ -156,23 +185,31 @@ void	simulation(char *data[])
 	t_data	shared_data;
 
 	philos = NULL;
+	t_philos *head;
 	shared_data.philos_number = 0;
 	shared_data.forks = NULL;
 	fill_philos(data, &philos, &shared_data);
 	get_by_index(philos, ft_atoi(data[0]))->left_fork = 0;
 	initial_data(philos, &shared_data);
 	init_mutex(&shared_data);
+	head = philos;
 	if (!philos->data->forks)
 	{
 		printf("err with data \n");
 		exit (90);
 	}
 	
-    while (philos)
+	while (philos)
     {
         pthread_create(&philos->thread, NULL, action, (void *)philos);
-        pthread_join(philos->thread, NULL);
+        // pthread_join(philos->thread, NULL);
         philos = philos->next;
+    } 
+    while (head)
+    {
+        // pthread_create(&philos->thread, NULL, action, (void *)philos);
+        pthread_join(head->thread, NULL);
+        head = head->next;
     }
 }
 
