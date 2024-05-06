@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/05 14:16:40 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/06 18:59:38 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 typedef struct s_data
 {
     int philos_number;
+    long long time;
     pthread_mutex_t print;
     pthread_mutex_t *forks;
 } t_data;
