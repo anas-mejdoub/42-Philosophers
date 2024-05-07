@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/06 19:51:52 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/07 14:51:52 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,23 +74,47 @@ t_philos	*get_last_philo(t_philos *philos)
 	}
 	return (philos);
 }
-void	print(t_philos *philos, char *msg, int op)
+int	print(t_philos *philos, char *msg, int op)
 {
+	int mutex = 0;
 	pthread_mutex_lock(&philos->data->print);
 	if (op == 1)
 	{
-		// philos->last_meal = get_time();
-		printf("%lld %d %s", get_time() - philos->data->time, philos->index,
-			msg);
+		// if (is_dead(philos))
+		// {
+		// 	printf("1\n");
+		// 	return 1;
+		// 	// exit(1);
+		// }
+		if (!philos->data->died)
+			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
+				msg);
 	}
 	else if (op == 2)
 	{
-		// philos->last_meal = get_time();
-		printf("%lld %d %s%lld %d is eating\n", get_time() - philos->data->time,
-			philos->index, msg, get_time() - philos->data->time, philos->index);
-		ft_sleep(philos->time_to_eat);
+		// if (is_dead(philos))
+		// {
+		// 	printf("2\n");
+		// 	// exit(1);
+		// 	return 1;
+		// }
+		if (!philos->data->died){
+			
+			printf("%lld %d %s%lld %d is eating\n", get_time() - philos->data->time,
+				philos->index, msg, get_time() - philos->data->time, philos->index);
+				mutex = 1;
+		}
+		// if (is_dead(philos))
+		// {
+		// 	printf("3\n");
+		// 	// exit(1);
+		// 	return 1;
+		// }
 	}
 	pthread_mutex_unlock(&philos->data->print);
+	if (mutex)
+		ft_sleep(philos->time_to_eat);
+	return 0;
 }
 t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 {
@@ -136,20 +160,34 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 		i++;
 	}
 }
+
 int is_dead(t_philos *philos)
 {
+	// if (philos->data->died)
+	// {
+	// 	return 1;
+	// }
 	if (get_time() > philos->last_meal + philos->time_to_die)
+	{
+		pthread_mutex_lock(&philos->data->death_mutex);
+		pthread_mutex_lock(&philos->data->print);
+		printf ("%lld %d died\n", get_time() - philos->data->time ,philos->index);
+		philos->data->died++;
+		pthread_mutex_unlock(&philos->data->print);
+		pthread_mutex_unlock(&philos->data->death_mutex);
 		return 1;
+	}
 	return 0;
 }
+
 void	*action(void *philos)
 {
 	t_philos	*ph;
 
 	ph = (t_philos *)philos;
 	if (ph->index % 2 == 0)
-		usleep(15 * 1000);
-	while (1)
+		ft_sleep(15);
+	while (!ph->data->died)
 	{
 		print(ph, "is thinking\n", 1);
 		pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
@@ -161,12 +199,6 @@ void	*action(void *philos)
 		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
 		print(ph, "is sleeping\n", 1);
 		ft_sleep(ph->time_to_sleep);
-		if (is_dead(philos))
-		{
-			print(ph, "is died \n", 1);
-			kill_philos(ph->data->head);
-			break;
-		}
 	}
 	return (NULL);
 }
@@ -177,17 +209,13 @@ void	init_mutex(t_data *data)
 
 	i = 0;
 	data->forks = malloc(sizeof(pthread_mutex_t) * data->philos_number);
-	if (!data->forks)
-	{
-		printf("err \n");
-		exit(77);
-	}
 	while (i < data->philos_number)
 	{
 		pthread_mutex_init(&data->forks[i], NULL);
 		i++;
 	}
 	pthread_mutex_init(&data->print, NULL);
+	pthread_mutex_init(&data->death_mutex, NULL);
 }
 
 void	initial_data(t_philos *philos, t_data *shared_data)
@@ -200,40 +228,57 @@ void	initial_data(t_philos *philos, t_data *shared_data)
 		philos = philos->next;
 	}
 }
-void kill_philos(t_philos *philos)
+int kill_philos(t_philos *philos)
 {
 	while (philos)
 	{
+		// pthread_mutex_unlock(&philos->data->forks[philos->right_fork]);
+		// pthread_mutex_unlock(&philos->data->forks[philos->left_fork]);
 		pthread_join(philos->thread, NULL);
+		// printf ("index %d \n", philos->index);
 		philos = philos->next;
 	}
+		printf ("indeefex %d \n", philos->index);
+	return 1;
 }
-void	simulation(char *data[])
+int	simulation(char *data[])
 {
 	t_philos	*philos;
 	t_data		shared_data;
 	t_philos *head;
+	t_philos *head2;
 
 	philos = NULL;
 	shared_data.philos_number = 0;
 	shared_data.forks = NULL;
+	shared_data.died = 0;
 	shared_data.time = get_time();
 	fill_philos(data, &philos, &shared_data);
 	get_by_index(philos, ft_atoi(data[0]))->left_fork = 0;
 	initial_data(philos, &shared_data);
 	init_mutex(&shared_data);
 	head = philos;
-	if (!philos->data->forks)
-	{
-		printf("err with data \n");
-		exit(90);
-	}
 	while (philos)
 	{
 		pthread_create(&philos->thread, NULL, action, (void *)philos);
 		philos = philos->next;
 	}
-	kill_philos(head);
+	while (!shared_data.died)
+	{
+		head2 = head;
+		while (head2)
+		{
+			if (is_dead(head2))
+			{
+				break;
+			}
+			head2 = head2->next;
+		}
+		// if (shared_data.died)
+		// 	printf("yes\n");
+	}
+	printf ("yes 2\n");
+	return (kill_philos(head));
 }
 
 int	main(int argc, char *argv[])
