@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/07 14:44:57 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/07 15:03:15 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,10 @@ typedef struct s_data
 typedef struct s_philos
 {
 	int					index;
-	long long					time_to_eat;
-	long long					time_to_sleep;
-	long long					time_to_die;
+	int locked_forks;
+	long long			time_to_eat;
+	long long			time_to_sleep;
+	long long			time_to_die;
 	int					eating;
 	int					left_fork;
 	int					right_fork;
@@ -44,6 +45,6 @@ typedef struct s_philos
 	t_data				*data;
 	struct s_philos		*next;
 }						t_philos;
-int					kill_philos(t_philos *philos);
-int is_dead(t_philos *philos);
+int						kill_philos(t_philos *philos);
+int						is_dead(t_philos *philos);
 #endif

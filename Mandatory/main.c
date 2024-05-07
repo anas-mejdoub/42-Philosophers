@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/07 14:51:52 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/07 16:28:19 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,36 +80,18 @@ int	print(t_philos *philos, char *msg, int op)
 	pthread_mutex_lock(&philos->data->print);
 	if (op == 1)
 	{
-		// if (is_dead(philos))
-		// {
-		// 	printf("1\n");
-		// 	return 1;
-		// 	// exit(1);
-		// }
 		if (!philos->data->died)
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
 	}
 	else if (op == 2)
 	{
-		// if (is_dead(philos))
-		// {
-		// 	printf("2\n");
-		// 	// exit(1);
-		// 	return 1;
-		// }
 		if (!philos->data->died){
 			
 			printf("%lld %d %s%lld %d is eating\n", get_time() - philos->data->time,
 				philos->index, msg, get_time() - philos->data->time, philos->index);
 				mutex = 1;
 		}
-		// if (is_dead(philos))
-		// {
-		// 	printf("3\n");
-		// 	// exit(1);
-		// 	return 1;
-		// }
 	}
 	pthread_mutex_unlock(&philos->data->print);
 	if (mutex)
@@ -129,7 +111,6 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 	new->time_to_eat = ft_atoi(data[2]);
 	new->time_to_sleep = ft_atoi(data[3]);
 	new->last_meal = get_time();
-	// printf ("%lld time now\n", new->last_meal);
 	new->right_fork = index;
 	new->left_fork = index + 1;
 	new->eating = 0;
@@ -163,14 +144,18 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 
 int is_dead(t_philos *philos)
 {
-	// if (philos->data->died)
-	// {
-	// 	return 1;
-	// }
 	if (get_time() > philos->last_meal + philos->time_to_die)
 	{
 		pthread_mutex_lock(&philos->data->death_mutex);
 		pthread_mutex_lock(&philos->data->print);
+		if (philos->locked_forks == 1)
+		{
+			pthread_mutex_unlock(&philos->data->forks[philos->right_fork]);
+		}
+		else if (philos->locked_forks == 2)
+		{
+			pthread_mutex_unlock(&philos->data->forks[philos->left_fork]);
+		}
 		printf ("%lld %d died\n", get_time() - philos->data->time ,philos->index);
 		philos->data->died++;
 		pthread_mutex_unlock(&philos->data->print);
@@ -191,12 +176,16 @@ void	*action(void *philos)
 	{
 		print(ph, "is thinking\n", 1);
 		pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
-		print(ph, "has taken a fork\n", 1);
+		ph->locked_forks++;
+		print(ph, "has taken a fork\n", 1);		
 		pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
+		ph->locked_forks++;
 		ph->last_meal = get_time();
 		print(ph, "has taken a fork\n", 2);
-		pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
 		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
+		ph->locked_forks--;
+		pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
+		ph->locked_forks--;
 		print(ph, "is sleeping\n", 1);
 		ft_sleep(ph->time_to_sleep);
 	}
@@ -228,19 +217,17 @@ void	initial_data(t_philos *philos, t_data *shared_data)
 		philos = philos->next;
 	}
 }
+
 int kill_philos(t_philos *philos)
 {
 	while (philos)
 	{
-		// pthread_mutex_unlock(&philos->data->forks[philos->right_fork]);
-		// pthread_mutex_unlock(&philos->data->forks[philos->left_fork]);
 		pthread_join(philos->thread, NULL);
-		// printf ("index %d \n", philos->index);
 		philos = philos->next;
 	}
-		printf ("indeefex %d \n", philos->index);
 	return 1;
 }
+
 int	simulation(char *data[])
 {
 	t_philos	*philos;
@@ -274,10 +261,7 @@ int	simulation(char *data[])
 			}
 			head2 = head2->next;
 		}
-		// if (shared_data.died)
-		// 	printf("yes\n");
 	}
-	printf ("yes 2\n");
 	return (kill_philos(head));
 }
 
