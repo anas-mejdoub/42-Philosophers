@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/07 15:03:15 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/07 18:39:53 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ typedef struct s_philos	t_philos;
 typedef struct s_data
 {
 	int					philos_number;
+	int					each_eat;
 	int					died;
 	long long			time;
 	pthread_mutex_t		print;

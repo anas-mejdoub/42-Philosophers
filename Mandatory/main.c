@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/07 17:29:03 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/07 20:00:02 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,6 +180,7 @@ void	*action(void *philos)
 		print(ph, "has taken a fork\n", 1);		
 		pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
 		ph->locked_forks++;
+		ph->eating++;
 		ph->last_meal = get_time();
 		print(ph, "has taken a fork\n", 2);
 		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
@@ -228,6 +229,30 @@ int kill_philos(t_philos *philos)
 	return 1;
 }
 
+
+int end_simulation(t_data *data)
+{
+	// if (!data->died)
+	// 	return 1;
+	// return 0;
+	int temp = data->head->eating;
+	if (data->each_eat != -1)
+	{
+		while (data->head)
+		{
+			// printf ("temp %d  %d %d \n", temp ,  data->each_eat, data->head->eating);
+			if (temp != data->each_eat || temp != data->head->eating)
+				return (1);
+			temp = data->head->eating;
+			data->head = data->head->next;
+		}
+		if (!data->died)
+			return (0);
+	}
+	else if (!data->died)
+		return (0);
+	return (1);
+}
 int	simulation(char *data[])
 {
 	t_philos	*philos;
@@ -240,6 +265,10 @@ int	simulation(char *data[])
 	shared_data.forks = NULL;
 	shared_data.died = 0;
 	shared_data.time = get_time();
+	if (data[4])
+		shared_data.each_eat = ft_atoi(data[4]);
+	else
+		shared_data.each_eat = -1;
 	fill_philos(data, &philos, &shared_data);
 	get_by_index(philos, ft_atoi(data[0]))->left_fork = 0;
 	initial_data(philos, &shared_data);
@@ -250,7 +279,7 @@ int	simulation(char *data[])
 		pthread_create(&philos->thread, NULL, action, (void *)philos);
 		philos = philos->next;
 	}
-	while (!shared_data.died)
+	while (end_simulation(&shared_data))
 	{
 		head2 = head;
 		while (head2)
