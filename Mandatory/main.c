@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/07 16:28:19 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/07 17:29:03 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,7 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 
 int is_dead(t_philos *philos)
 {
-	if (get_time() > philos->last_meal + philos->time_to_die)
+	if (get_time() >= philos->last_meal + philos->time_to_die)
 	{
 		pthread_mutex_lock(&philos->data->death_mutex);
 		pthread_mutex_lock(&philos->data->print);
