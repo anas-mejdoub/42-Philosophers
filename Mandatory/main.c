@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/07 20:00:02 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/08 16:04:17 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,8 +86,9 @@ int	print(t_philos *philos, char *msg, int op)
 	}
 	else if (op == 2)
 	{
-		if (!philos->data->died){
-			
+		if (!philos->data->died)
+		{
+			philos->eating++;
 			printf("%lld %d %s%lld %d is eating\n", get_time() - philos->data->time,
 				philos->index, msg, get_time() - philos->data->time, philos->index);
 				mutex = 1;
@@ -180,9 +181,9 @@ void	*action(void *philos)
 		print(ph, "has taken a fork\n", 1);		
 		pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
 		ph->locked_forks++;
-		ph->eating++;
 		ph->last_meal = get_time();
 		print(ph, "has taken a fork\n", 2);
+		// ph->eating++;
 		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
 		ph->locked_forks--;
 		pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
@@ -232,15 +233,11 @@ int kill_philos(t_philos *philos)
 
 int end_simulation(t_data *data)
 {
-	// if (!data->died)
-	// 	return 1;
-	// return 0;
 	int temp = data->head->eating;
 	if (data->each_eat != -1)
 	{
 		while (data->head)
 		{
-			// printf ("temp %d  %d %d \n", temp ,  data->each_eat, data->head->eating);
 			if (temp != data->each_eat || temp != data->head->eating)
 				return (1);
 			temp = data->head->eating;
@@ -249,8 +246,6 @@ int end_simulation(t_data *data)
 		if (!data->died)
 			return (0);
 	}
-	else if (!data->died)
-		return (0);
 	return (1);
 }
 int	simulation(char *data[])
@@ -279,13 +274,14 @@ int	simulation(char *data[])
 		pthread_create(&philos->thread, NULL, action, (void *)philos);
 		philos = philos->next;
 	}
-	while (end_simulation(&shared_data))
+	while (!shared_data.died)
 	{
 		head2 = head;
 		while (head2)
 		{
-			if (is_dead(head2))
+			if (is_dead(head2) || !end_simulation(head2->data))
 			{
+				shared_data.died++;
 				break;
 			}
 			head2 = head2->next;
