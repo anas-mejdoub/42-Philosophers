@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/08 16:04:17 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/08 16:47:47 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,6 +155,7 @@ int is_dead(t_philos *philos)
 		}
 		else if (philos->locked_forks == 2)
 		{
+			pthread_mutex_unlock(&philos->data->forks[philos->right_fork]);
 			pthread_mutex_unlock(&philos->data->forks[philos->left_fork]);
 		}
 		printf ("%lld %d died\n", get_time() - philos->data->time ,philos->index);
@@ -183,7 +184,6 @@ void	*action(void *philos)
 		ph->locked_forks++;
 		ph->last_meal = get_time();
 		print(ph, "has taken a fork\n", 2);
-		// ph->eating++;
 		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
 		ph->locked_forks--;
 		pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
@@ -219,17 +219,35 @@ void	initial_data(t_philos *philos, t_data *shared_data)
 		philos = philos->next;
 	}
 }
-
+void free_destroy(t_philos *philos)
+{
+	int i = 0;
+	while (i < philos->data->philos_number)
+	{
+		pthread_mutex_destroy(&philos->data->forks[i]);
+		i++;
+	}
+	pthread_mutex_destroy(&philos->data->death_mutex);
+	pthread_mutex_destroy(&philos->data->print);
+	free (philos->data->forks);
+	while (philos)
+	{
+		free (philos);
+		philos = philos->next;
+	}
+	
+}
 int kill_philos(t_philos *philos)
 {
+	t_philos *temp = philos;
 	while (philos)
 	{
 		pthread_join(philos->thread, NULL);
 		philos = philos->next;
 	}
+	free_destroy(temp);
 	return 1;
 }
-
 
 int end_simulation(t_data *data)
 {
@@ -248,6 +266,14 @@ int end_simulation(t_data *data)
 	}
 	return (1);
 }
+// void free_destroy(t_philos *philos)
+// {
+// 	while (philos)
+// 	{
+// 		free (philos);
+// 		philos = philos->next;
+// 	}
+// }
 int	simulation(char *data[])
 {
 	t_philos	*philos;
@@ -289,9 +315,13 @@ int	simulation(char *data[])
 	}
 	return (kill_philos(head));
 }
-
+void check_leaks()
+{
+	system("leaks philo");
+}
 int	main(int argc, char *argv[])
 {
+	atexit (check_leaks);
 	if (argc > 4 && argc <= 6)
 	{
 		simulation(argv + 1);
