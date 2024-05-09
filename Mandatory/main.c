@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/08 19:54:35 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/09 16:12:31 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,14 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos)
 	time = get_time();
 	while (1)
 	{
+		pthread_mutex_lock(&philos->data->death_mutex);
 		if (time + time_to_sleep == get_time() || philos->data->died)
+		{
+		pthread_mutex_unlock(&philos->data->death_mutex);
+
 			break ;
+		}
+		pthread_mutex_unlock(&philos->data->death_mutex);
 	}
 }
 
@@ -80,24 +86,29 @@ int	print(t_philos *philos, char *msg, int op)
 	pthread_mutex_lock(&philos->data->print);
 	if (op == 1)
 	{
+		pthread_mutex_lock(&philos->data->death_mutex);
 		if (!philos->data->died)
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
 		else
-			return (pthread_mutex_unlock(&philos->data->print), 0);
-			// return 0;
+			return (pthread_mutex_unlock(&philos->data->print), pthread_mutex_unlock(&philos->data->death_mutex), 0);
+		pthread_mutex_unlock(&philos->data->death_mutex);
 	}
 	else if (op == 2)
 	{
+		pthread_mutex_lock(&philos->data->death_mutex);
 		if (!philos->data->died)
 		{
+		pthread_mutex_unlock(&philos->data->death_mutex);
+			pthread_mutex_lock(&philos->eating_mutex);
 			philos->eating++;
+			pthread_mutex_unlock(&philos->eating_mutex);
 			printf("%lld %d %s%lld %d is eating\n", get_time() - philos->data->time,
 				philos->index, msg, get_time() - philos->data->time, philos->index);
 				mutex = 1;
 		}
 		else
-			return (pthread_mutex_unlock(&philos->data->print), 0);
+			return (pthread_mutex_unlock(&philos->data->print), pthread_mutex_unlock(&philos->data->death_mutex) ,0);
 	}
 	pthread_mutex_unlock(&philos->data->print);
 	if (mutex)
@@ -117,6 +128,8 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 	new->time_to_eat = ft_atoi(data[2]);
 	new->time_to_sleep = ft_atoi(data[3]);
 	new->last_meal = get_time();
+	pthread_mutex_init(&new->meal_mutex, NULL);
+	pthread_mutex_init(&new->eating_mutex, NULL);
 	new->right_fork = index;
 	new->left_fork = index + 1;
 	new->eating = 0;
@@ -150,41 +163,21 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 
 int is_dead(t_philos *philos)
 {
-	// t_philos *tmp = philos->data->head;
+	pthread_mutex_lock(&philos->meal_mutex);
 	if (get_time() >= philos->last_meal + philos->time_to_die)
 	{
-		// while (tmp)
-		// {
-		// 	if (tmp->index != philos->index)
-		// 	{
-		// 		pthread_mutex_unlock(&tmp->data->forks[tmp->right_fork]);
-		// 		pthread_mutex_unlock(&tmp->data->forks[tmp->left_fork]);
-		// 		pthread_mutex_unlock(&tmp->data->death_mutex);
-		// 		// pthread_mutex_unlock(&tmp->data->print);
-		// 	}
-		// 	tmp = tmp->next;
-		// }
-		// 	tmp = tmp->next;
-		// }
-		pthread_mutex_lock(&philos->data->death_mutex);
+	pthread_mutex_unlock(&philos->meal_mutex);
 		pthread_mutex_lock(&philos->data->print);
-		// if (philos->locked_forks ==  1)
-		// {
-		// 	pthread_mutex_unlock(&philos->data->forks[philos->right_fork]);
-		// }
-		// else if (philos->locked_forks == 2)
-		// {
 			pthread_mutex_unlock(&philos->data->forks[philos->right_fork]);
 			pthread_mutex_unlock(&philos->data->forks[philos->left_fork]);
-		// }
 		printf ("%lld %d died\n", get_time() - philos->data->time ,philos->index);
+		pthread_mutex_lock(&philos->data->death_mutex);
 		philos->data->died++;
-		// printf ("death %d \n", philos->data->died);
-		pthread_mutex_unlock(&philos->data->print);
 		pthread_mutex_unlock(&philos->data->death_mutex);
-		// printf ("hhhhh\n");
+		pthread_mutex_unlock(&philos->data->print);
 		return 1;
 	}
+	pthread_mutex_unlock(&philos->meal_mutex);
 	return 0;
 }
 
@@ -209,7 +202,10 @@ void	*action(void *philos)
 		}
 		pthread_mutex_lock(&ph->data->forks[ph->left_fork]);
 		ph->locked_forks++;
+		pthread_mutex_lock(&ph->meal_mutex);
 		ph->last_meal = get_time();
+		pthread_mutex_unlock(&ph->meal_mutex);
+		
 		if (!print(ph, "has taken a fork\n", 2))
 		{
 			pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
@@ -217,14 +213,11 @@ void	*action(void *philos)
 			break;
 		}
 		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
-		// ph->locked_forks--;
 		pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
-		// ph->locked_forks--;
 		if (!print(ph, "is sleeping\n", 1))
 			break;
 		ft_sleep(ph->time_to_sleep, philos);
 	}
-	// printf("--------------index %d\n", ph->index);
 	return (NULL);
 }
 
@@ -264,62 +257,33 @@ void free_destroy(t_philos *philos)
 	pthread_mutex_destroy(philos->data->forks);
 	pthread_mutex_destroy(&philos->data->death_mutex);
 	pthread_mutex_destroy(&philos->data->print);
-	// free (philos->data->forks);
-	// while (philos)
-	// {
-	// 	free (philos);
-	// 	philos = philos->next;
-	// }
-	
+	free (philos->data->forks);
+	while (philos)
+	{
+		free (philos);
+		philos = philos->next;
+	}
 }
 void unlock_all(t_philos *philos)
 {
 	int i = 0;
 	while (philos)
 	{
-		// int result = pthread_mutex_trylock(&philos->data->forks[philos->right_fork]);
-		// if(result != 0)
-			// printf(" 1 - valid\n");
 		pthread_mutex_unlock(&philos->data->forks[philos->right_fork]);
-		// result = pthread_mutex_trylock(&philos->data->forks[philos->left_fork]);
-		// if(result != 0)
-			// printf(" 2 %d - valid\n", result);
 		pthread_mutex_unlock(&philos->data->forks[philos->left_fork]);
-		// printf ("philo %d right %d left %d\n", philos->index, philos->right_fork, philos->left_fork);
-		// result = pthread_mutex_trylock(&philos->data->print);
-		// if(result != 0)
-			// printf(" - valid\n");
 		pthread_mutex_unlock(&philos->data->print);
-		// result = pthread_mutex_trylock(&philos->data->death_mutex);
-		// if(result != 0)
-			// printf(" - valid\n");
 		pthread_mutex_unlock(&philos->data->death_mutex);
 		philos = philos->next;
 		i++;
 	}
-	// printf("%d\n", i);
 }
 int kill_philos(t_philos *philos)
 {
-	// sleep(2);
 	t_philos *temp = philos;
 	unlock_all(philos->data->head);
-	// exit (0);
-	// int i  = 0;
 	while (philos)
 	{
-		// while (i < philos->data->philos_number)
-		// {
-		// pthread_mutex_unlock(&philos->data->forks[i]);
-		// i++;
-		// }
-		// pthread_mutex_unlock(&philos->data->forks[philos->left_fork]);
-		// pthread_mutex_unlock(&philos->data->death_mutex);
-		// pthread_mutex_unlock(&philos->data->print);
-		// printf ("before \n");
 		pthread_join(philos->thread, NULL);
-		// printf ("join %d \n",pthread_join(philos->thread, NULL));
-	// printf ("hhhhh3 %d next %d\n", philos->index, philos->next->index);
 		philos = philos->next;
 	}
 	free_destroy(temp);
@@ -328,14 +292,18 @@ int kill_philos(t_philos *philos)
 
 int end_simulation(t_data *data)
 {
+	pthread_mutex_lock(&data->head->eating_mutex);
 	int temp = data->head->eating;
+	pthread_mutex_unlock(&data->head->eating_mutex);
 	if (data->each_eat != -1)
 	{
 		while (data->head)
 		{
 			if (temp != data->each_eat || temp != data->head->eating)
 				return (1);
+				pthread_mutex_lock(&data->head->eating_mutex);
 			temp = data->head->eating;
+				pthread_mutex_unlock(&data->head->eating_mutex);
 			data->head = data->head->next;
 		}
 		if (!data->died)
@@ -377,14 +345,14 @@ int	simulation(char *data[])
 		{
 			if (is_dead(head2) || !end_simulation(head2->data))
 			{
-				// printf ("hhh2\n");
+				pthread_mutex_lock(&shared_data.death_mutex);
 				shared_data.died++;
+				pthread_mutex_unlock(&shared_data.death_mutex);
 				break;
 			}
 			head2 = head2->next;
 		}
 	}
-			// printf ("hhhhh3\n");
 	return (kill_philos(head));
 }
 void check_leaks()
@@ -393,7 +361,6 @@ void check_leaks()
 }
 int	main(int argc, char *argv[])
 {
-	// atexit (check_leaks);
 	if (argc > 4 && argc <= 6)
 	{
 		simulation(argv + 1);
