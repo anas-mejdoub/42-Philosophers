@@ -6,13 +6,13 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/09 16:15:27 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/10 20:40:03 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long long	get_time(void)
+long long	 get_time(void)
 {
 	struct timeval	time;
 
@@ -27,13 +27,24 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos)
 	time = get_time();
 	while (1)
 	{
-		pthread_mutex_lock(&philos->data->death_mutex);
-		if (time + time_to_sleep == get_time() || philos->data->died)
+		// pthread_mutex_lock(&philos->data->death_mutex);
+		if (time + time_to_sleep == get_time())
 		{
-			pthread_mutex_unlock(&philos->data->death_mutex);
+			// pthread_mutex_unlock(&philos->data->death_mutex);
 			break ;
 		}
-		pthread_mutex_unlock(&philos->data->death_mutex);
+		else
+		{		
+			pthread_mutex_lock(&philos->data->death_mutex);
+			if (philos->data->died)
+				{
+				pthread_mutex_unlock(&philos->data->death_mutex);
+					break;
+				}
+			pthread_mutex_unlock(&philos->data->death_mutex);
+			
+		}
+		usleep(100);
 	}
 }
 
@@ -90,12 +101,15 @@ int	print(t_philos *philos, char *msg, int op)
 	{
 		pthread_mutex_lock(&philos->data->death_mutex);
 		if (!philos->data->died)
+		{
+			pthread_mutex_unlock(&philos->data->death_mutex);
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
+		}
 		else
 			return (pthread_mutex_unlock(&philos->data->print),
 				pthread_mutex_unlock(&philos->data->death_mutex), 0);
-		pthread_mutex_unlock(&philos->data->death_mutex);
+		// pthread_mutex_unlock(&philos->data->death_mutex);
 	}
 	else if (op == 2)
 	{
@@ -109,6 +123,7 @@ int	print(t_philos *philos, char *msg, int op)
 			printf("%lld %d %s%lld %d is eating\n", get_time()
 				- philos->data->time, philos->index, msg, get_time()
 				- philos->data->time, philos->index);
+		// printf("%d heheh\n", philos->index);
 			mutex = 1;
 		}
 		else
@@ -117,7 +132,9 @@ int	print(t_philos *philos, char *msg, int op)
 	}
 	pthread_mutex_unlock(&philos->data->print);
 	if (mutex)
+	{
 		ft_sleep(philos->time_to_eat, philos);
+	}
 	return (1);
 }
 
@@ -214,8 +231,6 @@ void	*action(void *philos)
 		pthread_mutex_unlock(&ph->meal_mutex);
 		if (!print(ph, "has taken a fork\n", 2))
 		{
-			pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
-			pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
 			break ;
 		}
 		pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
