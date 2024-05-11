@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/10 20:40:03 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/11 15:58:10 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos)
 	while (1)
 	{
 		// pthread_mutex_lock(&philos->data->death_mutex);
-		if (time + time_to_sleep == get_time())
+		if (time + time_to_sleep <= get_time())
 		{
 			// pthread_mutex_unlock(&philos->data->death_mutex);
 			break ;
@@ -44,7 +44,7 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos)
 			pthread_mutex_unlock(&philos->data->death_mutex);
 			
 		}
-		usleep(100);
+		usleep(50);
 	}
 }
 
@@ -102,9 +102,9 @@ int	print(t_philos *philos, char *msg, int op)
 		pthread_mutex_lock(&philos->data->death_mutex);
 		if (!philos->data->died)
 		{
-			pthread_mutex_unlock(&philos->data->death_mutex);
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
+			pthread_mutex_unlock(&philos->data->death_mutex);
 		}
 		else
 			return (pthread_mutex_unlock(&philos->data->print),
@@ -123,7 +123,6 @@ int	print(t_philos *philos, char *msg, int op)
 			printf("%lld %d %s%lld %d is eating\n", get_time()
 				- philos->data->time, philos->index, msg, get_time()
 				- philos->data->time, philos->index);
-		// printf("%d heheh\n", philos->index);
 			mutex = 1;
 		}
 		else
