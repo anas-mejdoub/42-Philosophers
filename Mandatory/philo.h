@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/09 15:52:35 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/11 16:25:39 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,4 +51,5 @@ typedef struct s_philos
 }						t_philos;
 int						kill_philos(t_philos *philos);
 int						is_dead(t_philos *philos);
+int	condition(t_philos *philos);
 #endif

@@ -6,13 +6,13 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/11 15:58:10 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/11 16:30:22 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long long	 get_time(void)
+long long	get_time(void)
 {
 	struct timeval	time;
 
@@ -34,15 +34,14 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos)
 			break ;
 		}
 		else
-		{		
+		{
 			pthread_mutex_lock(&philos->data->death_mutex);
 			if (philos->data->died)
-				{
+			{
 				pthread_mutex_unlock(&philos->data->death_mutex);
-					break;
-				}
+				break ;
+			}
 			pthread_mutex_unlock(&philos->data->death_mutex);
-			
 		}
 		usleep(50);
 	}
@@ -99,16 +98,16 @@ int	print(t_philos *philos, char *msg, int op)
 	pthread_mutex_lock(&philos->data->print);
 	if (op == 1)
 	{
-		pthread_mutex_lock(&philos->data->death_mutex);
-		if (!philos->data->died)
+		// pthread_mutex_lock(&philos->data->death_mutex);
+		if (condition(philos))
 		{
+			// pthread_mutex_unlock(&philos->data->death_mutex);
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
-			pthread_mutex_unlock(&philos->data->death_mutex);
 		}
 		else
-			return (pthread_mutex_unlock(&philos->data->print),
-				pthread_mutex_unlock(&philos->data->death_mutex), 0);
+			return (pthread_mutex_unlock(&philos->data->print)
+				, 0);
 		// pthread_mutex_unlock(&philos->data->death_mutex);
 	}
 	else if (op == 2)
@@ -203,7 +202,17 @@ int	is_dead(t_philos *philos)
 	pthread_mutex_unlock(&philos->meal_mutex);
 	return (0);
 }
-
+int	condition(t_philos *philos)
+{
+	pthread_mutex_lock(&philos->data->death_mutex);
+	if (!philos->data->died)
+	{
+		pthread_mutex_unlock(&philos->data->death_mutex);
+		return (1);
+	}
+	pthread_mutex_unlock(&philos->data->death_mutex);
+	return (0);
+}
 void	*action(void *philos)
 {
 	t_philos	*ph;
@@ -211,7 +220,8 @@ void	*action(void *philos)
 	ph = (t_philos *)philos;
 	if (ph->index % 2 == 0)
 		ft_sleep(10, philos);
-	while (!ph->data->died)
+	// while (!ph->data->died)
+	while (condition(philos))
 	{
 		if (!print(ph, "is thinking\n", 1))
 			break ;
