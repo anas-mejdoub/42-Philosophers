@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/12 15:35:30 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/12 15:27:37 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,7 +230,7 @@ void	*action(void *philos)
 		if (!ph->action_time)
 		{
 			if (!print(ph, "is thinking\n", 1))
-				break;
+				break ;
 		}
 		ph->locked_forks = 0;
 		pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
