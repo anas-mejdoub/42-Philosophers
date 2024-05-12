@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/12 13:26:11 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/12 15:27:37 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,11 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 	long long	time;
 
 	if (think == 1)
+	{
+		pthread_mutex_lock(&philos->data->print);
 		printf("%lld %d is thinking\n", get_time() - philos->data->time, philos->index);
+		pthread_mutex_unlock(&philos->data->print);
+	}
 	time = get_time();
 	while (1)
 	{
@@ -227,7 +231,6 @@ void	*action(void *philos)
 		{
 			if (!print(ph, "is thinking\n", 1))
 				break ;
-			// usleep(1000);
 		}
 		ph->locked_forks = 0;
 		pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
