@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/12 11:04:28 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/12 13:26:11 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,12 @@ long long	get_time(void)
 	return (time.tv_sec * 1000 + time.tv_usec / 1000);
 }
 
-void	ft_sleep(long long time_to_sleep, t_philos *philos)
+void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 {
 	long long	time;
 
+	if (think == 1)
+		printf("%lld %d is thinking\n", get_time() - philos->data->time, philos->index);
 	time = get_time();
 	while (1)
 	{
@@ -126,7 +128,7 @@ int	print(t_philos *philos, char *msg, int op)
 	pthread_mutex_unlock(&philos->data->print);
 	if (mutex)
 	{
-		ft_sleep(philos->time_to_eat, philos);
+		ft_sleep(philos->time_to_eat, philos, 0);
 	}
 	return (1);
 }
@@ -144,6 +146,7 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 	new->time_to_eat = ft_atoi(data[2]);
 	new->time_to_sleep = ft_atoi(data[3]);
 	new->last_meal = get_time();
+	new->action_time = 0;
 	pthread_mutex_init(&new->meal_mutex, NULL);
 	pthread_mutex_init(&new->eating_mutex, NULL);
 	new->right_fork = index;
@@ -214,11 +217,18 @@ void	*action(void *philos)
 
 	ph = (t_philos *)philos;
 	if (ph->index % 2 == 0)
-		ft_sleep(10, philos);
+	{
+		ph->action_time++;
+		ft_sleep(10, philos, 1);
+	}
 	while (condition(philos))
 	{
-		if (!print(ph, "is thinking\n", 1))
-			break ;
+		if (!ph->action_time)
+		{
+			if (!print(ph, "is thinking\n", 1))
+				break ;
+			// usleep(1000);
+		}
 		ph->locked_forks = 0;
 		pthread_mutex_lock(&ph->data->forks[ph->right_fork]);
 		ph->locked_forks++;
@@ -240,7 +250,8 @@ void	*action(void *philos)
 		pthread_mutex_unlock(&ph->data->forks[ph->left_fork]);
 		if (!print(ph, "is sleeping\n", 1))
 			break ;
-		ft_sleep(ph->time_to_sleep, philos);
+		ft_sleep(ph->time_to_sleep, philos, 0);
+		ph->action_time = 0;
 	}
 	return (NULL);
 }
