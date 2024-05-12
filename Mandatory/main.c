@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/11 16:30:22 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/12 11:04:28 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,8 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos)
 	time = get_time();
 	while (1)
 	{
-		// pthread_mutex_lock(&philos->data->death_mutex);
 		if (time + time_to_sleep <= get_time())
 		{
-			// pthread_mutex_unlock(&philos->data->death_mutex);
 			break ;
 		}
 		else
@@ -98,17 +96,14 @@ int	print(t_philos *philos, char *msg, int op)
 	pthread_mutex_lock(&philos->data->print);
 	if (op == 1)
 	{
-		// pthread_mutex_lock(&philos->data->death_mutex);
 		if (condition(philos))
 		{
-			// pthread_mutex_unlock(&philos->data->death_mutex);
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
 		}
 		else
 			return (pthread_mutex_unlock(&philos->data->print)
 				, 0);
-		// pthread_mutex_unlock(&philos->data->death_mutex);
 	}
 	else if (op == 2)
 	{
@@ -220,7 +215,6 @@ void	*action(void *philos)
 	ph = (t_philos *)philos;
 	if (ph->index % 2 == 0)
 		ft_sleep(10, philos);
-	// while (!ph->data->died)
 	while (condition(philos))
 	{
 		if (!print(ph, "is thinking\n", 1))
