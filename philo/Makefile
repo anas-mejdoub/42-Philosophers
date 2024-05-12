@@ -1,4 +1,4 @@
-SRCS = ./Mandatory/main.c
+SRCS = main.c
 OBJBS = $(SRCS:.c=.o)
 NAME = philo
 CC = cc
@@ -10,7 +10,7 @@ $(NAME) : $(OBJBS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJBS)
 	@echo "\033[1;32mthe Mandatory target has been mad with success\033[0m"
 
-%.o : %.c ./Mandatory/philo.h
+%.o : %.c philo.h
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean :
