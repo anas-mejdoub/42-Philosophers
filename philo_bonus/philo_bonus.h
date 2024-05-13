@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/12 17:49:32 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/13 11:29:06 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 # include <stdlib.h>
 # include <sys/time.h>
 # include <unistd.h>
+#include <semaphore.h> 
+#include <signal.h>
 
 typedef struct s_philos	t_philos;
 typedef struct s_data
@@ -31,6 +33,9 @@ typedef struct s_data
 	pthread_mutex_t		death_mutex;
 	pthread_mutex_t		*forks;
 	t_philos			*head;
+	sem_t				*forks_sem;
+	pid_t	pid;
+	int *arr;
 }						t_data;
 typedef struct s_philos
 {

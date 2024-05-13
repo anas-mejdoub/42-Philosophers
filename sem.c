@@ -4,36 +4,42 @@
 #include <semaphore.h> 
 #include <unistd.h> 
 #include <sys/stat.h>
-#include <signal.h>        /* For mode constants */
+#include <signal.h> 
+#include <sys/wait.h>       /* For mode constants */
 // #include <semaphore.h>
+#include <stdlib.h>
 
 
-// sem_t mutex; 
-
-void *thread(sem_t *sem, int index) 
+void *thread(sem_t *sem, sem_t *pr, int index) 
 { 
-	//wait 
 	while (1)
 	{
-		sem_wait(sem); 
-		printf("Entered %d\n", index); 
-
-		//critical section 
-		// sleep(4); 
-		// usleep(1000);
-		//signal 
-		printf("Just Exiting %d\n", index);
+		// exit (1);
+		sem_wait(sem);
+		sem_wait(pr);
+		// write(1, "killo\n", 7);
+		printf ("%d\n", index);
+		// printf("Entered %d\n", index);
+		// printf("Just Exiting %d\n", index);
+		if (index == 2)
+		{
+			printf ("2 is going to exit rn\n");
+			// sem_post(sem);
+			exit (1);
+		}
+		sem_post(pr);
+		sem_post(sem);
 	}
-	// sem_post(&sem); 
     // exit (0);
-	return 0;
+	// return 0;
 } 
 #include <fcntl.h>
 
 
 int main() 
 { 
-	sem_t *sem = sem_open("/test", O_CREAT, 0644, 3);
+	sem_t *sem = sem_open("/test", O_CREAT, 0644, 6);
+	sem_t *pr = sem_open("/print", O_CREAT, 0644, 1);
 	int arr[6];
 	int i = 0;
 	while (i < 6)
@@ -41,7 +47,8 @@ int main()
 		pid_t j = fork();
 		if (j == 0)
 		{
-			thread(sem, i);
+			// printf ("test\n");
+			thread(sem, pr, i);
 			// exit (0);
 		}
 		else
@@ -51,13 +58,20 @@ int main()
 		}
 	}
 	i = 0;
-	usleep(1000);
-	while (1);
-	
-	while (i < 6)
+	// if ()
+	while (1)
 	{
-		kill(arr[i], SIGKILL);
-		i++;
+		// printf ("hh1\n");
+		wait(NULL);
+		// printf ("hh2\n");
+		while (i < 6)
+		{
+			kill(arr[i], SIGTERM);
+			printf ("%d killed\n", i);
+			i++;
+		}
+		usleep(50);
+		break;
 	}
 	sem_close(sem);
 sem_unlink("/test");
