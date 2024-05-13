@@ -3,34 +3,63 @@
 #include <pthread.h> 
 #include <semaphore.h> 
 #include <unistd.h> 
+#include <sys/stat.h>
+#include <signal.h>        /* For mode constants */
+// #include <semaphore.h>
 
-sem_t mutex; 
 
-void *thread(void* arg) 
+// sem_t mutex; 
+
+void *thread(sem_t *sem, int index) 
 { 
 	//wait 
-	sem_wait(&mutex); 
-	printf("\nEntered..\n"); 
+	while (1)
+	{
+		sem_wait(sem); 
+		printf("Entered %d\n", index); 
 
-	//critical section 
-	sleep(4); 
-	
-	//signal 
-	printf("\nJust Exiting...\n"); 
-	sem_post(&mutex); 
-    return NULL;
+		//critical section 
+		// sleep(4); 
+		// usleep(1000);
+		//signal 
+		printf("Just Exiting %d\n", index);
+	}
+	// sem_post(&sem); 
+    // exit (0);
+	return 0;
 } 
+#include <fcntl.h>
 
 
 int main() 
 { 
-	sem_init(&mutex, 0, 1); 
-	pthread_t t1,t2; 
-	pthread_create(&t1,NULL,thread,NULL); 
-	sleep(2); 
-	pthread_create(&t2,NULL,thread,NULL); 
-	pthread_join(t1,NULL); 
-	pthread_join(t2,NULL); 
-	sem_destroy(&mutex); 
+	sem_t *sem = sem_open("/test", O_CREAT, 0644, 3);
+	int arr[6];
+	int i = 0;
+	while (i < 6)
+	{
+		pid_t j = fork();
+		if (j == 0)
+		{
+			thread(sem, i);
+			// exit (0);
+		}
+		else
+		{
+			arr[i] = j;
+			i++;
+		}
+	}
+	i = 0;
+	usleep(1000);
+	while (1);
+	
+	while (i < 6)
+	{
+		kill(arr[i], SIGKILL);
+		i++;
+	}
+	sem_close(sem);
+sem_unlink("/test");
 	return 0; 
 } 

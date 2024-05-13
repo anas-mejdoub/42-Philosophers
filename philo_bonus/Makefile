@@ -16,7 +16,7 @@ $(NAME) : $(OBJ)
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean :
-	rm -rf #(OBJ)
+	rm -rf $(OBJ)
 	@echo "\033[1;31mthe Bonus part object files had been deleted\033[0m"
 
 fclean : clean
