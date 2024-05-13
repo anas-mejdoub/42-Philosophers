@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/13 12:47:31 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/13 13:19:52 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,10 +96,12 @@ t_philos	*get_last_philo(t_philos *philos)
 
 int	print(t_philos *philos, char *msg, int op)
 {
+	// replace the mutex with semaphore
 	int	mutex;
 
 	mutex = 0;
-	pthread_mutex_lock(&philos->data->print);
+	// pthread_mutex_lock(&philos->data->print);
+	sem_wait(philos->data->print_sem);
 	if (op == 1)
 	{
 		if (condition(philos))
@@ -126,9 +128,10 @@ int	print(t_philos *philos, char *msg, int op)
 			mutex = 1;
 		}
 		else
-			return (pthread_mutex_unlock(&philos->data->print),
+			return (sem_post(philos->data->print_sem),
 				pthread_mutex_unlock(&philos->data->death_mutex), 0);
 	}
+	sem_post(philos->data->print_sem);
 	pthread_mutex_unlock(&philos->data->print);
 	if (mutex)
 	{
@@ -275,6 +278,7 @@ void	init_mutex(t_data *data)
 		i++;
 	}
 	data->forks_sem = sem_open("/philos_forks", O_CREAT, 0644, data->philos_number);
+	data->forks_sem = sem_open("/philos_print", O_CREAT, 0644, 1);
 	pthread_mutex_init(&data->print, NULL);
 	pthread_mutex_init(&data->death_mutex, NULL);
 }
@@ -290,6 +294,7 @@ void	initial_data(t_philos *philos, t_data *shared_data)
 		printf ("error at memory allocation\n");
 		exit(1);
 	}
+	// shared_data->forks_sem = sem_open("/forks")
 	while (philos)
 	{
 		philos->data = shared_data;
@@ -382,7 +387,10 @@ int	simulation(char *data[])
 	t_data		shared_data;
 	t_philos	*head;
 	t_philos	*head2;
+	// t_philos	*head2;
 	int i = 0;
+	int res = 0;
+	int status;
 	// t_philos	*head2;
 
 	philos = NULL;
@@ -423,6 +431,16 @@ int	simulation(char *data[])
 		i = 0;
 		while (i < shared_data.philos_number)
 		{
+			res = waitpid(shared_data.arr[0], &status, WNOHANG);
+			if (res > 0)
+			{
+				i = 0;
+				while (i < shared_data.philos_number)
+				{
+					kill(shared_data.arr[i], SIGKILL);
+					i++;
+				}
+			}
 			// any process exited i gotta kill all
 			// waitpid(shared_data.arr[i], )
 		}

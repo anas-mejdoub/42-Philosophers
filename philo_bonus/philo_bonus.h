@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/13 11:29:06 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/13 13:00:05 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ typedef struct s_data
 	pthread_mutex_t		*forks;
 	t_philos			*head;
 	sem_t				*forks_sem;
+	sem_t				*print_sem;
 	pid_t	pid;
 	int *arr;
 }						t_data;
