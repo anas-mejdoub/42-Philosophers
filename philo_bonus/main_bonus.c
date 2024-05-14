@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/13 19:42:34 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/14 16:23:53 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,9 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 
 	if (think == 1)
 	{
-		// pthread_mutex_lock(&philos->data->print);
+		sem_wait(philos->data->print_sem);
 		printf("%lld %d is thinking\n", get_time() - philos->data->time, philos->index);
-		// pthread_mutex_unlock(&philos->data->print);
+		sem_post(philos->data->print_sem);
 	}
 	time = get_time();
 	while (1)
@@ -39,13 +39,10 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 		}
 		else
 		{
-			// pthread_mutex_lock(&philos->data->death_mutex);
-			if (philos->data->died)
+			if (is_dead(philos))
 			{
-				// pthread_mutex_unlock(&philos->data->death_mutex);
 				break ;
 			}
-			// pthread_mutex_unlock(&philos->data->death_mutex);
 		}
 		usleep(50);
 	}
@@ -96,36 +93,22 @@ t_philos	*get_last_philo(t_philos *philos)
 
 int	print(t_philos *philos, char *msg, int op)
 {
-	// replace the mutex with semaphore
 	int	mutex;
 
 	mutex = 0;
-	// pthread_mutex_lock(&philos->data->print);
 	sem_wait(philos->data->print_sem);
 	if (op == 1)
 	{
-		if (condition(philos))
-		{
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
-		}
-		else
-			return (sem_post(philos->data->print_sem), 0);
-
 	}
 	else if (op == 2)
 	{
-		// pthread_mutex_lock(&philos->data->death_mutex);
-		if (!philos->data->died)
-		{
 			philos->eating++;
 			printf("%lld %d %s%lld %d is eating\n", get_time()
 				- philos->data->time, philos->index, msg, get_time()
 				- philos->data->time, philos->index);
 			mutex = 1;
-		}
-		else
-			return (sem_post(philos->data->print_sem), 0);
 	}
 	sem_post(philos->data->print_sem);
 	if (mutex)
@@ -149,8 +132,6 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 	new->time_to_sleep = ft_atoi(data[3]);
 	new->last_meal = get_time();
 	new->action_time = 0;
-	// pthread_mutex_init(&new->meal_mutex, NULL);
-	// pthread_mutex_init(&new->eating_mutex, NULL);
 	new->right_fork = index;
 	new->left_fork = index + 1;
 	new->eating = 0;
@@ -186,6 +167,7 @@ int	is_dead(t_philos *philos)
 {
 	if (get_time() >= philos->last_meal + philos->time_to_die)
 	{
+		printf ("try\n");
 		sem_wait(philos->data->print_sem);
 		printf("%lld %d died\n", get_time() - philos->data->time,
 			philos->index);
@@ -197,13 +179,10 @@ int	is_dead(t_philos *philos)
 
 int	condition(t_philos *philos)
 {
-	pthread_mutex_lock(&philos->data->death_mutex);
 	if (!philos->data->died)
 	{
-		// pthread_mutex_unlock(&philos->data->death_mutex);
 		return (1);
 	}
-	// pthread_mutex_unlock(&philos->data->death_mutex);
 	return (0);
 }
 void	*action(void *philos)
@@ -216,25 +195,16 @@ void	*action(void *philos)
 		ph->action_time++;
 		ft_sleep(10, philos, 1);
 	}
-	while (condition(philos))
+	while (1)
 	{
-		if (!ph->action_time)
-		{
-			if (!print(ph, "is thinking\n", 1))
-				break ;
-		}
+		print(ph, "is thinking\n", 1);
 		ph->locked_forks = 0;
 		sem_wait(ph->data->forks_sem);
 		ph->locked_forks++;
-		if (!print(ph, "has taken a fork\n", 1))
-		{
-			// pthread_mutex_unlock(&ph->data->forks[ph->right_fork]);
-			break ;
-		}
+		print(ph , "has taken a fork\n", 1);
 		sem_wait(ph->data->forks_sem);
 		ph->locked_forks++;
 		ph->last_meal = get_time();
-		// pthread_mutex_unlock(&ph->meal_mutex);
 		if (!print(ph, "has taken a fork\n", 2))
 		{
 			break ;
@@ -243,7 +213,9 @@ void	*action(void *philos)
 		sem_post(ph->data->forks_sem);
 		if (!print(ph, "is sleeping\n", 1))
 			break ;
+		// is_dead(ph);
 		ft_sleep(ph->time_to_sleep, philos, 0);
+		is_dead(ph);
 		ph->action_time = 0;
 	}
 	return (NULL);
@@ -251,18 +223,8 @@ void	*action(void *philos)
 
 void	init_mutex(t_data *data)
 {
-	// int	i;
-
-	// i = 0;
-	// data->forks = malloc(sizeof(pthread_mutex_t) * data->philos_number);
-	// while (i < data->philos_number)
-	// {
-	// 	pthread_mutex_init(&data->forks[i], NULL);
-	// 	i++;
-	// }
-	data->forks_sem = sem_open("/philos_forks", O_CREAT, 0644, data->philos_number);
-	data->forks_sem = sem_open("/philos_print", O_CREAT, 0644, 1);
-
+	data->forks_sem = sem_open("/forks", O_CREAT, 0777, data->philos_number);
+	data->print_sem = sem_open("/print", O_CREAT, 0777, 1);
 }
 
 void	initial_data(t_philos *philos, t_data *shared_data)
@@ -305,37 +267,6 @@ void	free_destroy(t_philos *philos)
 	}
 }
 
-void	unlock_all(t_philos *philos)
-{
-	int	i;
-
-	i = 0;
-	while (philos)
-	{
-		pthread_mutex_unlock(&philos->data->forks[philos->right_fork]);
-		pthread_mutex_unlock(&philos->data->forks[philos->left_fork]);
-		pthread_mutex_unlock(&philos->data->print);
-		pthread_mutex_unlock(&philos->data->death_mutex);
-		philos = philos->next;
-		i++;
-	}
-}
-
-int	kill_philos(t_philos *philos)
-{
-	t_philos	*temp;
-
-	temp = philos;
-	unlock_all(philos->data->head);
-	while (philos)
-	{
-		pthread_join(philos->thread, NULL);
-		philos = philos->next;
-	}
-	free_destroy(temp);
-	return (1);
-}
-
 int	end_simulation(t_data *data)
 {
 	int	temp;
@@ -361,11 +292,9 @@ int	simulation(char *data[])
 	t_philos	*philos;
 	t_data		shared_data;
 	t_philos	*head;
-	t_philos	*head2;
 	
 	int i = 0;
-	int res = 0;
-	int status;
+
 
 	philos = NULL;
 	shared_data.philos_number = 0;
@@ -399,38 +328,24 @@ int	simulation(char *data[])
 		}
 	}
 	i = 0;
-	while (!shared_data.died)
-	{
-		i = 0;
+	// while (!shared_data.died)
+	// {
+	// 	i = 0;
 		while (i < shared_data.philos_number)
 		{
-			res = waitpid(shared_data.arr[0], &status, WNOHANG);
-			if (res > 0)
+			wait(NULL);
+			while (i < shared_data.philos_number)
 			{
-				i = 0;
-				while (i < shared_data.philos_number)
-				{
-					kill(shared_data.arr[i], SIGKILL);
-					i++;
-				}
+				// printf ("%d\n", i);
+				kill(shared_data.arr[i], SIGKILL);
+				i++;
 			}
-			// any process exited i gotta kill all
-			// waitpid(shared_data.arr[i], )
+			break;
 		}
-		// head2 = head;
-		// while (head2)
-		// {
-		// 	if (is_dead(head2) || !end_simulation(head2->data))
-		// 	{
-		// 		pthread_mutex_lock(&shared_data.death_mutex);
-		// 		shared_data.died++;
-		// 		pthread_mutex_unlock(&shared_data.death_mutex);
-		// 		break ;
-		// 	}
-		// 	head2 = head2->next;
-		// }
-	}
-	return (kill_philos(head));
+	// }
+	sem_close(shared_data.forks_sem);
+	sem_close(shared_data.print_sem);
+	return (1);
 }
 
 void	check_leaks(void)
@@ -440,6 +355,10 @@ void	check_leaks(void)
 
 int	main(int argc, char *argv[])
 {
+
+
+	// sem_unlink("/forks");
+// sem_unlink("/print");
 	if (argc > 4 && argc <= 6)
 	{
 		simulation(argv + 1);
@@ -447,4 +366,5 @@ int	main(int argc, char *argv[])
 	else
 		printf("invalid number of args ! \n");
 	return (0);
+	
 }
