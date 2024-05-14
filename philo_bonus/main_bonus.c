@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/14 17:47:34 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/14 18:44:09 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -359,6 +359,11 @@ int	simulation(char *data[])
 	
 	int i = 0;
 
+	sem_unlink("/forks");
+    sem_unlink("/print");
+    sem_unlink("/1");
+    sem_unlink("/2");
+    sem_unlink("/3");
 
 	philos = NULL;
 	shared_data.philos_number = 0;
@@ -392,20 +397,17 @@ int	simulation(char *data[])
 		}
 	}
 	i = 0;
-	// while (!shared_data.died)
-	// {
-	// 	i = 0;
+	while (i < shared_data.philos_number)
+	{
+		wait(NULL);
 		while (i < shared_data.philos_number)
 		{
-			wait(NULL);
-			while (i < shared_data.philos_number)
-			{
-				// printf ("%d\n", i);
-				kill(shared_data.arr[i], SIGKILL);
-				i++;
-			}
-			break;
+			sem_close(get_by_index(shared_data.head, i + 1)->meal_sem);
+			kill(shared_data.arr[i], SIGKILL);
+			i++;
 		}
+		break;
+	}
 	sem_close(shared_data.forks_sem);
 	sem_close(shared_data.print_sem);
 	return (1);
