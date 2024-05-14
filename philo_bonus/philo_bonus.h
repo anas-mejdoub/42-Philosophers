@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/13 13:00:05 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/14 16:52:43 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ typedef struct s_philos
 	int					left_fork;
 	int					right_fork;
 	long long			last_meal;
+	sem_t 	*meal_sem;
 	pthread_t			thread;
 	pthread_mutex_t		meal_mutex;
 	pthread_mutex_t		eating_mutex;

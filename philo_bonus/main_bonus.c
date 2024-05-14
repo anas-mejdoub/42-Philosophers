@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/14 16:23:53 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/14 17:47:34 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,40 @@ long long	get_time(void)
 	return (time.tv_sec * 1000 + time.tv_usec / 1000);
 }
 
+static int	get_nblen(int n)
+{
+	int	i;
+
+	i = 0;
+	if (n == 0)
+		return (1);
+	while (n > 0)
+	{
+		n /= 10;
+		i++;
+	}
+	return (i);
+}
+
+char	*ft_itoa(int n)
+{
+	char	*res;
+	int		len;
+
+	len = get_nblen(n) + 1;
+	res = malloc((len + 1) * sizeof(char));
+	if (!res)
+		return (NULL);
+	res[len] = '\0';
+	res[0] = '9';
+	while (len-- != 0)
+	{
+		res[len] = (n % 10) + '0';
+		n /= 10;
+	}
+	res[0] = '/';
+	return (res);
+}
 void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 {
 	long long	time;
@@ -36,13 +70,6 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 		if (time + time_to_sleep <= get_time())
 		{
 			break ;
-		}
-		else
-		{
-			if (is_dead(philos))
-			{
-				break ;
-			}
 		}
 		usleep(50);
 	}
@@ -117,10 +144,20 @@ int	print(t_philos *philos, char *msg, int op)
 	}
 	return (1);
 }
+int ft_strlen(char *str)
+{
+	int i = 0;
+	while (str[i])
+	{
+		i++;
+	}
+	return (i);
+}
 
 t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 {
 	t_philos	*new;
+	char *name;
 
 	new = malloc(sizeof(t_philos));
 	if (!new)
@@ -132,6 +169,13 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 	new->time_to_sleep = ft_atoi(data[3]);
 	new->last_meal = get_time();
 	new->action_time = 0;
+	name = ft_itoa(index + 1);
+	new->meal_sem = sem_open(name, O_CREAT, 0644, 1);
+	if (!new->meal_sem)
+	{
+		printf ("problem with sem\n");
+		exit (99);
+	}
 	new->right_fork = index;
 	new->left_fork = index + 1;
 	new->eating = 0;
@@ -167,7 +211,6 @@ int	is_dead(t_philos *philos)
 {
 	if (get_time() >= philos->last_meal + philos->time_to_die)
 	{
-		printf ("try\n");
 		sem_wait(philos->data->print_sem);
 		printf("%lld %d died\n", get_time() - philos->data->time,
 			philos->index);
@@ -185,38 +228,59 @@ int	condition(t_philos *philos)
 	}
 	return (0);
 }
-void	*action(void *philos)
+void *watching(t_philos *philos)
 {
-	t_philos	*ph;
-
-	ph = (t_philos *)philos;
-	if (ph->index % 2 == 0)
+	while (1)
 	{
-		ph->action_time++;
-		ft_sleep(10, philos, 1);
+		sem_wait(philos->meal_sem);
+		if (get_time() >= philos->last_meal + philos->time_to_die)
+		{
+			sem_post(philos->meal_sem);
+			sem_wait(philos->data->print_sem);
+			printf("%lld %d died\n", get_time() - philos->data->time,
+				philos->index);
+			philos->data->died++;
+			pthread_join(philos->thread, NULL);
+			sem_close(philos->meal_sem);
+			exit(1);
+		}
+		sem_post(philos->meal_sem);
+		usleep(50);
+	}
+	return (NULL);
+}
+void	*action(t_philos *philos)
+{
+	philos = (t_philos *)philos;
+	pthread_create(&philos->thread, NULL, (void *)watching, (void *)philos);
+	if (philos->index % 2 == 0)
+	{
+		philos->action_time++;
+		ft_sleep(10, philos, 2);
 	}
 	while (1)
 	{
-		print(ph, "is thinking\n", 1);
-		ph->locked_forks = 0;
-		sem_wait(ph->data->forks_sem);
-		ph->locked_forks++;
-		print(ph , "has taken a fork\n", 1);
-		sem_wait(ph->data->forks_sem);
-		ph->locked_forks++;
-		ph->last_meal = get_time();
-		if (!print(ph, "has taken a fork\n", 2))
+		print(philos, "is thinking\n", 1);
+		philos->locked_forks = 0;
+		sem_wait(philos->data->forks_sem);
+		philos->locked_forks++;
+		print(philos , "has taken a fork\n", 1);
+		sem_wait(philos->data->forks_sem);
+		philos->locked_forks++;
+		sem_wait(philos->meal_sem);
+		philos->last_meal = get_time();
+		sem_post(philos->meal_sem);
+		if (!print(philos, "has taken a fork\n", 2))
 		{
 			break ;
 		}
-		sem_post(ph->data->forks_sem);
-		sem_post(ph->data->forks_sem);
-		if (!print(ph, "is sleeping\n", 1))
+		sem_post(philos->data->forks_sem);
+		sem_post(philos->data->forks_sem);
+		if (!print(philos, "is sleeping\n", 1))
 			break ;
-		// is_dead(ph);
-		ft_sleep(ph->time_to_sleep, philos, 0);
-		is_dead(ph);
-		ph->action_time = 0;
+		ft_sleep(philos->time_to_sleep, philos, 0);
+		// is_dead(philos);
+		philos->action_time = 0;
 	}
 	return (NULL);
 }
@@ -342,7 +406,6 @@ int	simulation(char *data[])
 			}
 			break;
 		}
-	// }
 	sem_close(shared_data.forks_sem);
 	sem_close(shared_data.print_sem);
 	return (1);
