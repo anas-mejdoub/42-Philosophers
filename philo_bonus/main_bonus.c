@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/14 18:44:09 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/15 11:52:00 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -220,14 +220,6 @@ int	is_dead(t_philos *philos)
 	return (0);
 }
 
-int	condition(t_philos *philos)
-{
-	if (!philos->data->died)
-	{
-		return (1);
-	}
-	return (0);
-}
 void *watching(t_philos *philos)
 {
 	while (1)
@@ -289,6 +281,8 @@ void	init_mutex(t_data *data)
 {
 	data->forks_sem = sem_open("/forks", O_CREAT, 0777, data->philos_number);
 	data->print_sem = sem_open("/print", O_CREAT, 0777, 1);
+	data->death_sem = sem_open("/death", O_CREAT, 0777, 1);
+	data->pid_sem = sem_open("/pid", O_CREAT, 0777, 1);
 }
 
 void	initial_data(t_philos *philos, t_data *shared_data)
@@ -306,27 +300,6 @@ void	initial_data(t_philos *philos, t_data *shared_data)
 	{
 		philos->data = shared_data;
 		philos->data->head = head;
-		philos = philos->next;
-	}
-}
-
-void	free_destroy(t_philos *philos)
-{
-	int	i;
-
-	i = 0;
-	while (i < philos->data->philos_number)
-	{
-		pthread_mutex_destroy(&philos->data->forks[i]);
-		i++;
-	}
-	pthread_mutex_destroy(philos->data->forks);
-	pthread_mutex_destroy(&philos->data->death_mutex);
-	pthread_mutex_destroy(&philos->data->print);
-	free(philos->data->forks);
-	while (philos)
-	{
-		free(philos);
 		philos = philos->next;
 	}
 }
@@ -350,6 +323,54 @@ int	end_simulation(t_data *data)
 	}
 	return (1);
 }
+int	kill_philos(t_philos *philos)
+{
+	// t_philos	*temp;
+
+	// temp = philos;
+	while (philos)
+	{
+		// printf ("indexxxxxxxxxxx%d \n", philos->index);
+		pthread_join(philos->thread, NULL);
+		philos = philos->next;
+	}
+	// free_destroy(temp);
+	return (1);
+}
+void kill_process(t_data *data)
+{
+	int i = 0;
+	while (i < data->philos_number)
+	{
+		// if (i != n)
+		// {
+			sem_close(get_by_index(data->head, i + 1)->meal_sem);
+			kill(data->arr[i], SIGKILL);
+		// }
+		i++;
+	}
+}
+
+void main_watcher(t_philos *philos)
+{
+	int status;
+	while (1)
+	{
+		int res = waitpid(philos->data->arr[philos->index - 1], &status, 0);
+		if (res != -1)
+		{
+		// printf ("hehe\n");
+			sem_wait(philos->data->death_sem);
+			philos->data->died = 1;
+			sem_post(philos->data->death_sem);
+		// sem_post(philos->data->pid_sem);
+		while (1);
+		
+		}
+		// sem_post(philos->data->pid_sem);
+	}
+	// exit (1);
+}
 
 int	simulation(char *data[])
 {
@@ -361,9 +382,12 @@ int	simulation(char *data[])
 
 	sem_unlink("/forks");
     sem_unlink("/print");
+    sem_unlink("/death");
+    sem_unlink("/pid");
     sem_unlink("/1");
     sem_unlink("/2");
     sem_unlink("/3");
+    sem_unlink("/4");
 
 	philos = NULL;
 	shared_data.philos_number = 0;
@@ -396,21 +420,34 @@ int	simulation(char *data[])
 			philos = philos->next;
 		}
 	}
-	i = 0;
-	while (i < shared_data.philos_number)
+	if (shared_data.pid > 0)
 	{
-		wait(NULL);
+		i = 0;
 		while (i < shared_data.philos_number)
 		{
-			sem_close(get_by_index(shared_data.head, i + 1)->meal_sem);
-			kill(shared_data.arr[i], SIGKILL);
+			pthread_create(&get_by_index(shared_data.head, i + 1)->wtacher_thread, NULL, (void *)main_watcher, (void *)get_by_index(shared_data.head, i + 1));
 			i++;
 		}
-		break;
+		while (1)
+		{
+			sem_wait(shared_data.death_sem);
+			if (shared_data.died)
+			{
+
+				sem_close(shared_data.forks_sem);
+				sem_close(shared_data.death_sem);
+				sem_close(shared_data.print_sem);
+				sem_close(shared_data.pid_sem);
+				kill_philos(shared_data.head);
+				kill_process(&shared_data);
+				break;
+			}
+			sem_post(shared_data.death_sem);
+			usleep(50);
+		}
+
 	}
-	sem_close(shared_data.forks_sem);
-	sem_close(shared_data.print_sem);
-	return (1);
+	return (0);
 }
 
 void	check_leaks(void)
@@ -420,10 +457,6 @@ void	check_leaks(void)
 
 int	main(int argc, char *argv[])
 {
-
-
-	// sem_unlink("/forks");
-// sem_unlink("/print");
 	if (argc > 4 && argc <= 6)
 	{
 		simulation(argv + 1);
