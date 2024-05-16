@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/14 21:30:13 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/16 11:00:40 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ typedef struct s_data
 typedef struct s_philos
 {
 	int					index;
+	char				*name_sem;
 	int					action_time;
 	int					locked_forks;
 	long long			time_to_eat;

@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/15 11:52:00 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/16 15:23:07 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,6 @@ int ft_strlen(char *str)
 t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 {
 	t_philos	*new;
-	char *name;
 
 	new = malloc(sizeof(t_philos));
 	if (!new)
@@ -169,9 +168,9 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 	new->time_to_sleep = ft_atoi(data[3]);
 	new->last_meal = get_time();
 	new->action_time = 0;
-	name = ft_itoa(index + 1);
-	new->meal_sem = sem_open(name, O_CREAT, 0644, 1);
-	if (!new->meal_sem)
+	new->name_sem = ft_itoa(index + 1);
+	new->meal_sem = sem_open(new->name_sem, O_CREAT, 0644, 1);
+	if (new->meal_sem == SEM_FAILED)
 	{
 		printf ("problem with sem\n");
 		exit (99);
@@ -207,44 +206,31 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 	}
 }
 
-int	is_dead(t_philos *philos)
-{
-	if (get_time() >= philos->last_meal + philos->time_to_die)
-	{
-		sem_wait(philos->data->print_sem);
-		printf("%lld %d died\n", get_time() - philos->data->time,
-			philos->index);
-		philos->data->died++;
-		exit(1);
-	}
-	return (0);
-}
-
 void *watching(t_philos *philos)
 {
 	while (1)
 	{
 		sem_wait(philos->meal_sem);
-		if (get_time() >= philos->last_meal + philos->time_to_die)
+		if (get_time() >= philos->last_meal+ philos->time_to_die)
 		{
-			sem_post(philos->meal_sem);
 			sem_wait(philos->data->print_sem);
 			printf("%lld %d died\n", get_time() - philos->data->time,
 				philos->index);
+			sem_wait(philos->data->death_sem);
 			philos->data->died++;
-			pthread_join(philos->thread, NULL);
-			sem_close(philos->meal_sem);
+			sem_post(philos->data->death_sem);
 			exit(1);
 		}
 		sem_post(philos->meal_sem);
-		usleep(50);
+		usleep(700);
 	}
 	return (NULL);
 }
+
 void	*action(t_philos *philos)
 {
-	philos = (t_philos *)philos;
 	pthread_create(&philos->thread, NULL, (void *)watching, (void *)philos);
+	pthread_detach(philos->thread);
 	if (philos->index % 2 == 0)
 	{
 		philos->action_time++;
@@ -255,23 +241,17 @@ void	*action(t_philos *philos)
 		print(philos, "is thinking\n", 1);
 		philos->locked_forks = 0;
 		sem_wait(philos->data->forks_sem);
-		philos->locked_forks++;
 		print(philos , "has taken a fork\n", 1);
 		sem_wait(philos->data->forks_sem);
 		philos->locked_forks++;
 		sem_wait(philos->meal_sem);
 		philos->last_meal = get_time();
 		sem_post(philos->meal_sem);
-		if (!print(philos, "has taken a fork\n", 2))
-		{
-			break ;
-		}
+		print(philos, "has taken a fork\n", 2);
 		sem_post(philos->data->forks_sem);
 		sem_post(philos->data->forks_sem);
-		if (!print(philos, "is sleeping\n", 1))
-			break ;
+		print(philos, "is sleeping\n", 1);
 		ft_sleep(philos->time_to_sleep, philos, 0);
-		// is_dead(philos);
 		philos->action_time = 0;
 	}
 	return (NULL);
@@ -282,7 +262,6 @@ void	init_mutex(t_data *data)
 	data->forks_sem = sem_open("/forks", O_CREAT, 0777, data->philos_number);
 	data->print_sem = sem_open("/print", O_CREAT, 0777, 1);
 	data->death_sem = sem_open("/death", O_CREAT, 0777, 1);
-	data->pid_sem = sem_open("/pid", O_CREAT, 0777, 1);
 }
 
 void	initial_data(t_philos *philos, t_data *shared_data)
@@ -304,37 +283,13 @@ void	initial_data(t_philos *philos, t_data *shared_data)
 	}
 }
 
-int	end_simulation(t_data *data)
-{
-	int	temp;
-
-	temp = data->head->eating;
-	if (data->each_eat != -1)
-	{
-		while (data->head)
-		{
-			if (temp != data->each_eat || temp != data->head->eating)
-				return (1);
-			temp = data->head->eating;
-			data->head = data->head->next;
-		}
-		if (!data->died)
-			return (0);
-	}
-	return (1);
-}
 int	kill_philos(t_philos *philos)
 {
-	// t_philos	*temp;
-
-	// temp = philos;
 	while (philos)
 	{
-		// printf ("indexxxxxxxxxxx%d \n", philos->index);
 		pthread_join(philos->thread, NULL);
 		philos = philos->next;
 	}
-	// free_destroy(temp);
 	return (1);
 }
 void kill_process(t_data *data)
@@ -342,11 +297,8 @@ void kill_process(t_data *data)
 	int i = 0;
 	while (i < data->philos_number)
 	{
-		// if (i != n)
-		// {
-			sem_close(get_by_index(data->head, i + 1)->meal_sem);
-			kill(data->arr[i], SIGKILL);
-		// }
+		sem_close(get_by_index(data->head, i + 1)->meal_sem);
+		kill(data->arr[i], SIGKILL);
 		i++;
 	}
 }
@@ -359,17 +311,16 @@ void main_watcher(t_philos *philos)
 		int res = waitpid(philos->data->arr[philos->index - 1], &status, 0);
 		if (res != -1)
 		{
-		// printf ("hehe\n");
 			sem_wait(philos->data->death_sem);
 			philos->data->died = 1;
 			sem_post(philos->data->death_sem);
-		// sem_post(philos->data->pid_sem);
-		while (1);
+			while (1)
+				usleep(50);
+			// exit (1);
 		
 		}
-		// sem_post(philos->data->pid_sem);
+		// usleep(50);
 	}
-	// exit (1);
 }
 
 int	simulation(char *data[])
@@ -379,16 +330,17 @@ int	simulation(char *data[])
 	t_philos	*head;
 	
 	int i = 0;
-
+	
 	sem_unlink("/forks");
     sem_unlink("/print");
     sem_unlink("/death");
     sem_unlink("/pid");
-    sem_unlink("/1");
-    sem_unlink("/2");
-    sem_unlink("/3");
-    sem_unlink("/4");
 
+    char sem_name[5];
+    for (int i = 1; i <= 200; i++) {
+        sprintf(sem_name, "/%d", i);
+        sem_unlink(sem_name);
+    }
 	philos = NULL;
 	shared_data.philos_number = 0;
 	shared_data.forks = NULL;
@@ -426,6 +378,7 @@ int	simulation(char *data[])
 		while (i < shared_data.philos_number)
 		{
 			pthread_create(&get_by_index(shared_data.head, i + 1)->wtacher_thread, NULL, (void *)main_watcher, (void *)get_by_index(shared_data.head, i + 1));
+			pthread_detach(get_by_index(shared_data.head, i + 1)->wtacher_thread);
 			i++;
 		}
 		while (1)
@@ -433,11 +386,9 @@ int	simulation(char *data[])
 			sem_wait(shared_data.death_sem);
 			if (shared_data.died)
 			{
-
 				sem_close(shared_data.forks_sem);
 				sem_close(shared_data.death_sem);
 				sem_close(shared_data.print_sem);
-				sem_close(shared_data.pid_sem);
 				kill_philos(shared_data.head);
 				kill_process(&shared_data);
 				break;
@@ -446,6 +397,11 @@ int	simulation(char *data[])
 			usleep(50);
 		}
 
+	}
+	while (shared_data.head)
+	{
+		sem_unlink(shared_data.head->name_sem);
+		shared_data.head = shared_data.head->next; 
 	}
 	return (0);
 }
