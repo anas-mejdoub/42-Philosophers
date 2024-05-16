@@ -8,15 +8,26 @@
 #include <sys/wait.h>       /* For mode constants */
 // #include <semaphore.h>
 #include <stdlib.h>
+# include <pthread.h>
+
+void *test(void *ptr)
+{
+	while (1)
+	{
+	printf ("test\n");
+	while (1);
+	}
+}
 
 
-void *thread(sem_t *sem, sem_t *pr, int index) 
+void *thread(sem_t *sem, sem_t *pr, int index, pthread_t *thread) 
 { 
 	while (1)
 	{
 		// exit (1);
-		sem_wait(sem);
-		sem_wait(pr);
+		pthread_create(thread, NULL, (void *)test, (void *)NULL);
+		// sem_wait(sem);
+		// sem_wait(pr);
 		// write(1, "killo\n", 7);
 		printf ("%d\n", index);
 		// printf("Entered %d\n", index);
@@ -27,8 +38,8 @@ void *thread(sem_t *sem, sem_t *pr, int index)
 			// sem_post(sem);
 			exit (1);
 		}
-		sem_post(pr);
-		sem_post(sem);
+		// sem_post(pr);
+		// sem_post(sem);
 	}
     // exit (0);
 	// return 0;
@@ -40,6 +51,12 @@ int main()
 { 
 	sem_t *sem = sem_open("/test", O_CREAT, 0644, 6);
 	sem_t *pr = sem_open("/print", O_CREAT, 0644, 1);
+	pthread_t thread_s[6];
+	int j = 0;
+	// while (j < 6)
+	// {
+	
+	// }
 	int arr[6];
 	int i = 0;
 	while (i < 6)
@@ -48,7 +65,7 @@ int main()
 		if (j == 0)
 		{
 			// printf ("test\n");
-			thread(sem, pr, i);
+			thread(sem, pr, i, &thread_s[i]);
 			// exit (0);
 		}
 		else

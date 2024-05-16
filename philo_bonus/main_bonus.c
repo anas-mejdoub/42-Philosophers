@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/16 15:23:07 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/16 15:34:56 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -316,10 +316,8 @@ void main_watcher(t_philos *philos)
 			sem_post(philos->data->death_sem);
 			while (1)
 				usleep(50);
-			// exit (1);
-		
 		}
-		// usleep(50);
+		usleep(50);
 	}
 }
 
@@ -330,17 +328,10 @@ int	simulation(char *data[])
 	t_philos	*head;
 	
 	int i = 0;
-	
 	sem_unlink("/forks");
     sem_unlink("/print");
     sem_unlink("/death");
     sem_unlink("/pid");
-
-    char sem_name[5];
-    for (int i = 1; i <= 200; i++) {
-        sprintf(sem_name, "/%d", i);
-        sem_unlink(sem_name);
-    }
 	philos = NULL;
 	shared_data.philos_number = 0;
 	shared_data.forks = NULL;

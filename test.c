@@ -74,24 +74,32 @@
 
 //   return 0;
 // }
-#include "./Mandatory/philo.h"
-int main(int argc, char const *argv[])
-{
-  t_philos * head;
+#include "./philo_bonus/philo_bonus.h"
+// int main(int argc, char const *argv[])
+// {
+//   t_philos * head;
 
-  t_philos *ph;
-  t_philos *ph2;
-  // t_philos *ph;
+//   t_philos *ph;
+//   t_philos *ph2;
+//   // t_philos *ph;
 
-  ph = malloc(sizeof(t_philos));
-  ph2 = malloc(sizeof(t_philos));
-  ph->index = 0;
-  ph->next = ph2;
-  ph2->index = 2;
-  ph2->next = NULL;
-  head = ph;
-  printf ("size %d\n", sizeof(t_philos));
-  printf ("%p \n", &head->index);
-  printf ("%p \n", head + 208);
-  return 0;
+//   ph = malloc(sizeof(t_philos));
+//   ph2 = malloc(sizeof(t_philos));
+//   ph->index = 0;
+//   ph->next = ph2;
+//   ph2->index = 2;
+//   ph2->next = NULL;
+//   head = ph;
+//   printf ("size %d\n", sizeof(t_philos));
+//   printf ("%p \n", &head->index);
+//   printf ("%p \n", head + 208);
+//   return 0;
+// }
+int main() {
+    char sem_name[10];
+    for (int i = 1; i <= 200; i++) {
+        sprintf(sem_name, "/%d", i);
+        sem_unlink(sem_name);
+    }
+    return 0;
 }

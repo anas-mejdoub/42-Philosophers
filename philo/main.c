@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/12 15:35:30 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/14 20:34:24 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -290,6 +290,7 @@ void	initial_data(t_philos *philos, t_data *shared_data)
 void	free_destroy(t_philos *philos)
 {
 	int	i;
+	t_philos *tmp;
 
 	i = 0;
 	while (i < philos->data->philos_number)
@@ -303,8 +304,9 @@ void	free_destroy(t_philos *philos)
 	free(philos->data->forks);
 	while (philos)
 	{
-		free(philos);
+		tmp = philos;
 		philos = philos->next;
+		free(tmp);
 	}
 }
 
