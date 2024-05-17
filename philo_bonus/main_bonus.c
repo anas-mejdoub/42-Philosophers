@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/17 18:19:48 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/17 18:54:55 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -329,7 +329,6 @@ int	simulation(char *data[])
 		}
 		else if (philos->pid == 0)
 		{
-			printf ("test\n");
 			action((void *)philos);
 		}
 		else
@@ -341,7 +340,6 @@ int	simulation(char *data[])
 	}
 
 	int j  = 0;
-	printf ("hehe-------------------------------------\n");
 	while (j <= shared_data.philos_number)
 	{
 		sem_post(shared_data.begin_sem);
