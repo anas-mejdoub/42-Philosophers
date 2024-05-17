@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/17 15:15:30 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/17 17:38:42 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,8 +205,17 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 		i++;
 	}
 }
+void time_for_philo(t_philos *philos)
+{
+	sem_wait(philos->data->begin_sem);
+	philos->last_meal = get_time();
+	philos->data->time = get_time();
+	// printf ("[%d]---[%lld]----------\n", philos->index, philos->data->time);
+	// sem_post(philos->data->begin_sem);
+}
 void watcher(t_philos *philos)
 {
+	usleep(100);
 	while (1)
 	{
 		if (get_time() >= philos->last_meal + philos->time_to_die)
@@ -217,17 +226,18 @@ void watcher(t_philos *philos)
 			sem_post(philos->data->death_sem);
 			exit(1);
 		}
-		usleep(1000);
 	}
 }
+
 
 void	*action(t_philos *philos)
 {
 	pthread_create(&philos->thread, NULL, (void *)watcher, (void *)philos);
 	pthread_detach(philos->thread);
+	time_for_philo(philos);
 	if (philos->index % 2 == 0)
 	{
-		philos->action_time++;
+		// philos->action_time++;
 		ft_sleep(10, philos, 2);
 	}
 	while (1)
@@ -252,6 +262,7 @@ void	init_mutex(t_data *data)
 	data->forks_sem = sem_open("/forks", O_CREAT, 0777, data->philos_number);
 	data->print_sem = sem_open("/print", O_CREAT, 0777, 1);
 	data->death_sem = sem_open("/death", O_CREAT, 0777, 0);
+	data->begin_sem = sem_open("/begin", O_CREAT, 0777, 0);
 	if (data->forks_sem == SEM_FAILED || data->print_sem == SEM_FAILED || data->death_sem == SEM_FAILED)
 	{
 		write (2, "error with opening semaphores !", 32);
@@ -300,11 +311,11 @@ int	simulation(char *data[])
 	sem_unlink("/forks");
     sem_unlink("/print");
     sem_unlink("/death");
+    sem_unlink("/begin");
     sem_unlink("/pid");
 	philos = NULL;
 	shared_data.philos_number = 0;
 	shared_data.died = 0;
-	shared_data.time = get_time();
 	if (data[4])
 		shared_data.each_eat = ft_atoi(data[4]);
 	else
@@ -314,6 +325,7 @@ int	simulation(char *data[])
 	initial_data(philos, &shared_data);
 	init_mutex(&shared_data);
 	head = philos;
+	shared_data.time = get_time();
 	while (philos)
 	{
 		shared_data.pid = fork();
@@ -323,7 +335,9 @@ int	simulation(char *data[])
 			exit (1);
 		}
 		else if (shared_data.pid == 0)
+		{
 			action((void *)philos);
+		}
 		else
 		{
 			shared_data.arr[i] = shared_data.pid;
@@ -331,15 +345,19 @@ int	simulation(char *data[])
 			philos = philos->next;
 		}
 	}
-	while (1)
+	int j  = 0;
+	while (j <= shared_data.philos_number)
 	{
-		sem_wait(shared_data.death_sem);
-		kill_process(&shared_data);
-		sem_close(shared_data.forks_sem);
-		sem_close(shared_data.death_sem);
-		sem_close(shared_data.print_sem);
-		break;
+		sem_post(shared_data.begin_sem);
+		j++;
+		
 	}
+	sem_wait(shared_data.death_sem);
+	kill_process(&shared_data);
+	sem_close(shared_data.forks_sem);
+	sem_close(shared_data.death_sem);
+	sem_close(shared_data.print_sem);
+	sem_close(shared_data.begin_sem);
 	while (shared_data.head)
 	{
 		sem_unlink(shared_data.head->name_sem);

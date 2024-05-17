@@ -47,50 +47,17 @@ void *thread(sem_t *sem, sem_t *pr, int index, pthread_t *thread)
 #include <fcntl.h>
 
 
-int main() 
-{ 
-	sem_t *sem = sem_open("/test", O_CREAT, 0644, 6);
-	sem_t *pr = sem_open("/print", O_CREAT, 0644, 1);
-	pthread_t thread_s[6];
-	int j = 0;
-	// while (j < 6)
-	// {
-	
-	// }
-	int arr[6];
-	int i = 0;
-	while (i < 6)
-	{
-		pid_t j = fork();
-		if (j == 0)
-		{
-			// printf ("test\n");
-			thread(sem, pr, i, &thread_s[i]);
-			// exit (0);
-		}
-		else
-		{
-			arr[i] = j;
-			i++;
-		}
-	}
-	i = 0;
-	// if ()
-	while (1)
-	{
-		// printf ("hh1\n");
-		wait(NULL);
-		// printf ("hh2\n");
-		while (i < 6)
-		{
-			kill(arr[i], SIGTERM);
-			printf ("%d killed\n", i);
-			i++;
-		}
-		usleep(50);
-		break;
-	}
-	sem_close(sem);
-sem_unlink("/test");
-	return 0; 
-} 
+#include <stdio.h>
+#include <semaphore.h>
+
+int main() {
+    // char sem_name[5];
+    // for (int i = 1; i <= 200; i++) {
+    //     sprintf(sem_name, "/%d", i);
+    // }
+        sem_unlink("/1");
+        sem_unlink("/2");
+        sem_unlink("/3");
+        sem_unlink("/4");
+    return 0;
+}

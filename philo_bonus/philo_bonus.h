@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/17 13:21:18 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/17 15:38:47 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ typedef struct s_data
 	sem_t				*print_sem;
 	sem_t				*death_sem;
 	sem_t				*pid_sem;
+	sem_t				*begin_sem;
 	pid_t	pid;
 	int *arr;
 }						t_data;

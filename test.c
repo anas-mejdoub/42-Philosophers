@@ -95,11 +95,26 @@
 //   printf ("%p \n", head + 208);
 //   return 0;
 // }
-int main() {
-    char sem_name[10];
-    for (int i = 1; i <= 200; i++) {
-        sprintf(sem_name, "/%d", i);
-        sem_unlink(sem_name);
-    }
-    return 0;
-}
+// typedef struct s_test
+// {
+//     char c;
+// } t_test;
+
+// int main() {
+//     // char sem_name[10];
+//     // for (int i = 1; i <= 200; i++) {
+//     //     sprintf(sem_name, "/%d", i);
+//     //     sem_unlink(sem_name);
+//     // }
+//     t_test var;
+//     var.c = 'a';
+//     void *p = &var;
+//     char *ptr;
+//     void *d;
+//     ptr = strdup("hello");
+//     d = ptr;
+//     // p->c = '0';
+//     printf("%s \n", d);
+//     // printf("%c \n", p->c);
+//     return 0;
+// }
