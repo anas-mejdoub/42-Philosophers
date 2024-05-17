@@ -1,10 +1,11 @@
-#include "philo_bonus.h"
-int main()
-{
-    sem_unlink("/forks");
-    sem_unlink("/print");
-    sem_unlink("/1");
-    sem_unlink("/2");
-    sem_unlink("/3");
+#include <stdio.h>
+#include <semaphore.h>
+
+int main() {
+    char sem_name[10];
+    for (int i = 1; i <= 200; i++) {
+        sprintf(sem_name, "/%d", i);
+        sem_unlink(sem_name);
+    }
     return 0;
 }
