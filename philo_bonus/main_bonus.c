@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/16 15:34:56 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/17 11:01:47 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,31 +206,28 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 	}
 }
 
-void *watching(t_philos *philos)
-{
-	while (1)
-	{
-		sem_wait(philos->meal_sem);
-		if (get_time() >= philos->last_meal+ philos->time_to_die)
-		{
-			sem_wait(philos->data->print_sem);
-			printf("%lld %d died\n", get_time() - philos->data->time,
-				philos->index);
-			sem_wait(philos->data->death_sem);
-			philos->data->died++;
-			sem_post(philos->data->death_sem);
-			exit(1);
-		}
-		sem_post(philos->meal_sem);
-		usleep(700);
-	}
-	return (NULL);
-}
+// void *watching(t_philos *philos)
+// {
+// 	while (1)
+// 	{
+// 		sem_wait(philos->meal_sem);
+// 		if (get_time() >= philos->last_meal+ philos->time_to_die)
+// 		{
+// 			sem_wait(philos->data->print_sem);
+// 			printf("%lld %d died\n", get_time() - philos->data->time,
+// 				philos->index);
+// 			exit(1);
+// 		}
+// 		sem_post(philos->meal_sem);
+// 		usleep(100);
+// 	}
+// 	return (NULL);
+// }
 
 void	*action(t_philos *philos)
 {
-	pthread_create(&philos->thread, NULL, (void *)watching, (void *)philos);
-	pthread_detach(philos->thread);
+// 	pthread_create(&philos->thread, NULL, (void *)watching, (void *)philos);
+// 	pthread_detach(philos->thread);
 	if (philos->index % 2 == 0)
 	{
 		philos->action_time++;
@@ -244,9 +241,9 @@ void	*action(t_philos *philos)
 		print(philos , "has taken a fork\n", 1);
 		sem_wait(philos->data->forks_sem);
 		philos->locked_forks++;
-		sem_wait(philos->meal_sem);
+		// sem_wait(philos->meal_sem);
 		philos->last_meal = get_time();
-		sem_post(philos->meal_sem);
+		// sem_post(philos->meal_sem);
 		print(philos, "has taken a fork\n", 2);
 		sem_post(philos->data->forks_sem);
 		sem_post(philos->data->forks_sem);
@@ -363,32 +360,41 @@ int	simulation(char *data[])
 			philos = philos->next;
 		}
 	}
-	if (shared_data.pid > 0)
-	{
-		i = 0;
-		while (i < shared_data.philos_number)
-		{
-			pthread_create(&get_by_index(shared_data.head, i + 1)->wtacher_thread, NULL, (void *)main_watcher, (void *)get_by_index(shared_data.head, i + 1));
-			pthread_detach(get_by_index(shared_data.head, i + 1)->wtacher_thread);
-			i++;
-		}
-		while (1)
-		{
-			sem_wait(shared_data.death_sem);
-			if (shared_data.died)
-			{
-				sem_close(shared_data.forks_sem);
-				sem_close(shared_data.death_sem);
-				sem_close(shared_data.print_sem);
-				kill_philos(shared_data.head);
-				kill_process(&shared_data);
-				break;
-			}
-			sem_post(shared_data.death_sem);
-			usleep(50);
-		}
+	// while (1)
+	// {
+	// 	wait(NULL);
+	// 	kill_philos(shared_data.head);
+	// 	sem_close(shared_data.forks_sem);
+	// 	sem_close(shared_data.death_sem);
+	// 	sem_close(shared_data.print_sem);
+	// 	break;
+	// }
+	// if (shared_data.pid > 0)
+	// {
+	// 	i = 0;
+	// 	while (i < shared_data.philos_number)
+	// 	{
+	// 		pthread_create(&get_by_index(shared_data.head, i + 1)->wtacher_thread, NULL, (void *)main_watcher, (void *)get_by_index(shared_data.head, i + 1));
+	// 		pthread_detach(get_by_index(shared_data.head, i + 1)->wtacher_thread);
+	// 		i++;
+	// 	}
+	// 	while (1)
+	// 	{
+	// 		sem_wait(shared_data.death_sem);
+	// 		if (shared_data.died)
+	// 		{
+	// 			sem_close(shared_data.forks_sem);
+	// 			sem_close(shared_data.death_sem);
+	// 			sem_close(shared_data.print_sem);
+	// 			kill_philos(shared_data.head);
+	// 			kill_process(&shared_data);
+	// 			break;
+	// 		}
+	// 		sem_post(shared_data.death_sem);
+	// 		usleep(50);
+	// 	}
 
-	}
+	// }
 	while (shared_data.head)
 	{
 		sem_unlink(shared_data.head->name_sem);
