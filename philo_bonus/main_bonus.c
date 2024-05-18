@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/18 12:00:06 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/18 16:17:25 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,9 +128,14 @@ int	print(t_philos *philos, char *msg, int op)
 	{
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
+		
 	}
 	else if (op == 2)
 	{
+		sem_wait(philos->meal_sem);
+		philos->last_meal = get_time();
+		// printf ("LAST MEAL {%d} %lld\n", philos->index, philos->last_meal);
+		sem_post(philos->meal_sem);
 			philos->eating++;
 			printf("%lld %d %s%lld %d is eating\n", get_time()
 				- philos->data->time, philos->index, msg, get_time()
@@ -139,9 +144,7 @@ int	print(t_philos *philos, char *msg, int op)
 	}
 	sem_post(philos->data->print_sem);
 	if (mutex)
-	{
 		ft_sleep(philos->time_to_eat, philos, 0);
-	}
 	return (1);
 }
 int ft_strlen(char *str)
@@ -208,21 +211,42 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 void time_for_philo(t_philos *philos)
 {
 	sem_wait(philos->data->begin_sem);
+	
+	sem_wait(philos->meal_sem);
 	philos->last_meal = get_time();
+	sem_post(philos->meal_sem);
 	philos->data->time = get_time();
+	sem_post(philos->data->begin_sem);
 }
+
+int condition (t_philos *philos)
+{
+	sem_wait(philos->meal_sem);
+	if (get_time() >= philos->last_meal + philos->time_to_die)
+	{
+		sem_post(philos->meal_sem);
+		sem_wait(philos->data->die_sem);
+		sem_post(philos->data->die_sem);
+		sem_post(philos->data->die_sem);
+		return (1);
+	}
+	sem_post(philos->meal_sem);
+	return (0);
+}
+
 void watcher(t_philos *philos)
 {
-	usleep(50 * 1000);
+	usleep(55 * 1000);
 	while (1)
 	{
-		if (get_time() >= philos->last_meal + philos->time_to_die)
+		if (condition(philos))
 		{
 			sem_wait(philos->data->print_sem);
 			printf("%lld %d died\n", get_time() - philos->data->time,
 				philos->index);
 			sem_post(philos->data->death_sem);
 		}
+		usleep(1000);
 	}
 }
 
@@ -232,6 +256,8 @@ void	*action(t_philos *philos)
 	pthread_create(&philos->thread, NULL, (void *)watcher, (void *)philos);
 	pthread_detach(philos->thread);
 	time_for_philo(philos);
+	if (philos->index > philos->data->philos_number / 2 && philos->data->philos_number != 1)
+		usleep(4000);
 	while (1)
 	{
 		print(philos, "is thinking\n", 1);
@@ -239,12 +265,10 @@ void	*action(t_philos *philos)
 		print(philos , "has taken a fork\n", 1);
 		sem_wait(philos->data->forks_sem);
 		print(philos, "has taken a fork\n", 2);
-		philos->last_meal = get_time();
 		sem_post(philos->data->forks_sem);
 		sem_post(philos->data->forks_sem);
 		print(philos, "is sleeping\n", 1);
 		ft_sleep(philos->time_to_sleep, philos, 0);
-		philos->action_time = 0;
 	}
 	return (NULL);
 }
@@ -255,6 +279,8 @@ void	init_mutex(t_data *data)
 	data->print_sem = sem_open("/print", O_CREAT, 0777, 1);
 	data->death_sem = sem_open("/death", O_CREAT, 0777, 0);
 	data->begin_sem = sem_open("/begin", O_CREAT, 0777, 0);
+	data->die_sem = sem_open("/begin", O_CREAT, 0777, 1);
+	data->eats_sem = sem_open("/eat", O_CREAT, 0777, 1);
 	if (data->forks_sem == SEM_FAILED || data->print_sem == SEM_FAILED || data->death_sem == SEM_FAILED)
 	{
 		write (2, "error with opening semaphores !", 32);
@@ -304,6 +330,7 @@ int	simulation(char *data[])
     sem_unlink("/print");
     sem_unlink("/death");
     sem_unlink("/begin");
+    sem_unlink("/eat");
 	philos = NULL;
 	shared_data.philos_number = 0;
 	shared_data.died = 0;
@@ -316,7 +343,7 @@ int	simulation(char *data[])
 	initial_data(philos, &shared_data);
 	init_mutex(&shared_data);
 	head = philos;
-	shared_data.time = get_time();
+	// shared_data.time = get_time();
 	while (philos)
 	{
 		philos->pid = fork();
@@ -344,12 +371,26 @@ int	simulation(char *data[])
 		j++;
 		
 	}
-	sem_wait(shared_data.death_sem);
-	kill_process(&shared_data);
-	sem_close(shared_data.forks_sem);
-	sem_close(shared_data.death_sem);
-	sem_close(shared_data.print_sem);
-	sem_close(shared_data.begin_sem);
+	if (shared_data.each_eat == -1)
+	{
+		sem_wait(shared_data.death_sem);
+		kill_process(&shared_data);
+		sem_close(shared_data.forks_sem);
+		sem_close(shared_data.death_sem);
+		sem_close(shared_data.print_sem);
+		sem_close(shared_data.begin_sem);
+		sem_close(shared_data.eats_sem);
+	}
+	// else
+	// {
+	// 	// j = 0;
+	// 	// // while (j < shared_data.philos_number)
+	// 	// // {
+	// 	// // 	sem_wait(shared_data.death_sem);
+	// 	// // 	sem_post(shared_data.death_sem);
+	// 	// // 	j++;
+	// 	// // }
+	// }
 	while (shared_data.head)
 	{
 		sem_unlink(shared_data.head->name_sem);
