@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/17 18:54:55 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/18 12:00:06 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,8 +170,6 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 	new->action_time = 0;
 	new->name_sem = ft_itoa(index + 1);
 	new->meal_sem = sem_open(new->name_sem, O_CREAT, 0644, 1);
-	// new->name_sem[1] = 'm';
-	// new->thread_sem = sem_open(new->name_sem, O_CREAT, 0644, 1);
 	if (new->meal_sem == SEM_FAILED)
 	{
 		printf ("problem with sem\n");
