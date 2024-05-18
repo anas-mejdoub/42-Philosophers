@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/18 15:35:20 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/18 19:23:12 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ typedef struct s_data
 	int					each_eat;
 	int					died;
 	long long			time;
-
 	t_philos			*head;
 	sem_t				*forks_sem;
 	sem_t				*print_sem;
@@ -37,6 +36,7 @@ typedef struct s_data
 	sem_t				*begin_sem;
 	sem_t				*eats_sem;
 	sem_t				*die_sem;
+	pthread_t	eat_thread;
 	pid_t	pid;
 	int *arr;
 }						t_data;
@@ -57,7 +57,7 @@ typedef struct s_philos
 	sem_t 	*meal_sem;
 	sem_t 	*thread_sem;
 	pthread_t			thread;
-	pthread_t			wtacher_thread;
+	// pthread_t			wtacher_thread;
 	t_data				*data;
 	struct s_philos		*next;
 }						t_philos;
