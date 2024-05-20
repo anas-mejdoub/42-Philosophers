@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/18 19:23:12 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/20 19:35:39 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ typedef struct s_philos
 	sem_t 	*meal_sem;
 	sem_t 	*thread_sem;
 	pthread_t			thread;
-	// pthread_t			wtacher_thread;
 	t_data				*data;
 	struct s_philos		*next;
 }						t_philos;

@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/20 17:15:05 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/20 19:39:33 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,14 +253,21 @@ void watcher(t_philos *philos)
 
 void	*action(t_philos *philos)
 {
+	int cycle = 1;
 	pthread_create(&philos->thread, NULL, (void *)watcher, (void *)philos);
 	pthread_detach(philos->thread);
 	time_for_philo(philos);
 	if (philos->index > philos->data->philos_number / 2 && philos->data->philos_number != 1)
-		usleep(4000);
-	while (1)
 	{
 		print(philos, "is thinking\n", 1);
+		cycle = 0;
+		usleep(4000);
+	}
+	while (1)
+	{
+		if (cycle)
+			print(philos, "is thinking\n", 1);
+		cycle++;
 		sem_wait(philos->data->forks_sem);
 		print(philos , "has taken a fork\n", 1);
 		sem_wait(philos->data->forks_sem);
@@ -401,7 +408,6 @@ int	simulation(char *data[])
 		j++;
 	}
 	sem_close(shared_data.eats_sem);
-	// printf("test1\n");
 	while (shared_data.head)
 	{
 		sem_unlink(shared_data.head->name_sem);
