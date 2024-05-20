@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/20 16:57:04 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/20 17:15:05 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -318,18 +318,15 @@ void kill_process(t_data *data)
 	while (i < data->philos_number)
 	{
 		sem_close(get_by_index(data->head, i + 1)->meal_sem);
-		// printf ("%d\n", i);
 		kill(data->arr[i], SIGKILL);
 		i++;
 	}
-	// printf ("killed ?\n");
 }
 void eats_end(t_data *data)
 {
 	int i = 0;
 	while (i < data->philos_number)
 	{
-		// printf("iiiiiiiiiii %d\n", i);
 		sem_wait(data->eats_sem);
 		i++;
 	}
