@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/18 20:54:06 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/20 16:57:04 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,7 +244,6 @@ void watcher(t_philos *philos)
 			printf("%lld %d died\n", get_time() - philos->data->time,
 				philos->index);
 			sem_post(philos->data->death_sem);
-				printf ("{%d} done !\n", philos->index);
 			while (1);
 		}
 		usleep(1000);
