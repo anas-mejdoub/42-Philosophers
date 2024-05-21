@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/20 19:39:33 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/21 15:11:56 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,7 +210,6 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 void time_for_philo(t_philos *philos)
 {
 	sem_wait(philos->data->begin_sem);
-	
 	sem_wait(philos->meal_sem);
 	philos->last_meal = get_time();
 	sem_post(philos->meal_sem);
@@ -421,10 +420,24 @@ void	check_leaks(void)
 	system("leaks philo");
 }
 
+int check_input(char **data)
+{
+	int i = 0;
+	while (data[i])
+	{
+		if (ft_atoi(data[i]) <= 0)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
 int	main(int argc, char *argv[])
 {
 	if (argc > 4 && argc <= 6)
 	{
+		if (check_input(argv + 1))
+			return (printf("invalid args ! all args should be positive numbers\n"));
 		simulation(argv + 1);
 	}
 	else

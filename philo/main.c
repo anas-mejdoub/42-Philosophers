@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/20 16:56:31 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/21 15:12:13 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 			}
 			pthread_mutex_unlock(&philos->data->death_mutex);
 		}
-		usleep(50);
+		usleep(85);
 	}
 }
 
@@ -413,11 +413,23 @@ void	check_leaks(void)
 {
 	system("leaks philo");
 }
-
+int check_input(char **data)
+{
+	int i = 0;
+	while (data[i])
+	{
+		if (ft_atoi(data[i]) <= 0)
+			return (1);
+		i++;
+	}
+	return (0);
+}
 int	main(int argc, char *argv[])
 {
 	if (argc > 4 && argc <= 6)
 	{
+		if (check_input(argv + 1))
+			return (printf("invalid args ! all args should be positive numbers\n"));
 		simulation(argv + 1);
 	}
 	else
