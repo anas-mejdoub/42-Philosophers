@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/21 15:12:13 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/21 15:17:25 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -426,6 +426,7 @@ int check_input(char **data)
 }
 int	main(int argc, char *argv[])
 {
+	atexit(check_leaks);
 	if (argc > 4 && argc <= 6)
 	{
 		if (check_input(argv + 1))
@@ -433,6 +434,6 @@ int	main(int argc, char *argv[])
 		simulation(argv + 1);
 	}
 	else
-		printf("invalid number of args ! \n");
+		return (printf("invalid number of args ! \n"));
 	return (0);
 }

@@ -3,7 +3,7 @@ SRC = main_bonus.c
 OBJ=$(SRC:.c=.o)
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror #-pthread#-fsanitize=thread -g #thread -g
+CFLAGS = -Wall -Wextra -Werror -pthread #-pthread#-fsanitize=thread -g #thread -g
 NAME = philo_bonus
 
 all : $(NAME)

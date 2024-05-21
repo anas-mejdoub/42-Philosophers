@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/21 15:11:56 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/21 15:26:00 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -406,12 +406,17 @@ int	simulation(char *data[])
 		sem_post(shared_data.eats_sem);
 		j++;
 	}
+	t_philos *tmp;
 	sem_close(shared_data.eats_sem);
 	while (shared_data.head)
 	{
+		tmp = shared_data.head;
 		sem_unlink(shared_data.head->name_sem);
-		shared_data.head = shared_data.head->next; 
+		free(shared_data.head->name_sem);
+		shared_data.head = shared_data.head->next;
+		free(tmp);
 	}
+	free(shared_data.arr);
 	return (0);
 }
 
@@ -434,6 +439,7 @@ int check_input(char **data)
 
 int	main(int argc, char *argv[])
 {
+	atexit(check_leaks);
 	if (argc > 4 && argc <= 6)
 	{
 		if (check_input(argv + 1))
@@ -441,7 +447,7 @@ int	main(int argc, char *argv[])
 		simulation(argv + 1);
 	}
 	else
-		printf("invalid number of args ! \n");
+		return (printf("invalid number of args ! \n"));
 	return (0);
 	
 }
