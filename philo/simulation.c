@@ -6,24 +6,46 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 11:24:05 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/22 19:48:34 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/22 20:52:24 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int threads_creation(t_philos *philos)
+int	threads_creation(t_philos *philos)
 {
-
 	while (philos)
 	{
-		if (pthread_create(&philos->thread, NULL, (void *)action, (void *)philos) != 0)
+		if (pthread_create(&philos->thread, NULL, (void *)action,
+				(void *)philos) != 0)
 		{
 			write(2, "error while creating threads\n", 30);
 			kill_philos(philos->data->head);
 			return (1);
 		}
-		philos = philos->next;	
+		philos = philos->next;
+	}
+	return (0);
+}
+
+int	death_watcher(t_data *shared_data)
+{
+	t_philos	*head2;
+
+	while (!shared_data->died)
+	{
+		head2 = shared_data->head;
+		while (head2)
+		{
+			if (is_dead(head2) || !end_simulation(head2->data))
+			{
+				pthread_mutex_lock(&shared_data->death_mutex);
+				shared_data->died++;
+				pthread_mutex_unlock(&shared_data->death_mutex);
+				break ;
+			}
+			head2 = head2->next;
+		}
 	}
 	return (0);
 }
@@ -33,7 +55,6 @@ int	simulation(char *data[])
 	t_philos	*philos;
 	t_data		shared_data;
 	t_philos	*head;
-	t_philos	*head2;
 
 	philos = NULL;
 	shared_data.philos_number = 0;
@@ -51,25 +72,6 @@ int	simulation(char *data[])
 	head = philos;
 	if (threads_creation(philos))
 		return (0);
-	// while (philos)
-	// {
-	// 	pthread_create(&philos->thread, NULL, (void *)action, (void *)philos);
-	// 	philos = philos->next;
-	// }
-	while (!shared_data.died)
-	{
-		head2 = head;
-		while (head2)
-		{
-			if (is_dead(head2) || !end_simulation(head2->data))
-			{
-				pthread_mutex_lock(&shared_data.death_mutex);
-				shared_data.died++;
-				pthread_mutex_unlock(&shared_data.death_mutex);
-				break ;
-			}
-			head2 = head2->next;
-		}
-	}
+	death_watcher(&shared_data);
 	return (kill_philos(head));
 }
