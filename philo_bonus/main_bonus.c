@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/21 15:26:00 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/22 20:42:20 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,8 +224,8 @@ int condition (t_philos *philos)
 	{
 		sem_post(philos->meal_sem);
 		sem_wait(philos->data->die_sem);
-		sem_post(philos->data->die_sem);
-		sem_post(philos->data->die_sem);
+		// sem_post(philos->data->die_sem);
+		// sem_post(philos->data->die_sem);
 		return (1);
 	}
 	sem_post(philos->meal_sem);
@@ -239,6 +239,7 @@ void watcher(t_philos *philos)
 	{
 		if (condition(philos))
 		{
+			// printf("{%d}   %lld\n",philos->index, get_time() - philos->data->time);
 			sem_wait(philos->data->print_sem);
 			printf("%lld %d died\n", get_time() - philos->data->time,
 				philos->index);
@@ -405,6 +406,7 @@ int	simulation(char *data[])
 	{
 		sem_post(shared_data.eats_sem);
 		j++;
+		// usleep(85);
 	}
 	t_philos *tmp;
 	sem_close(shared_data.eats_sem);
@@ -439,7 +441,7 @@ int check_input(char **data)
 
 int	main(int argc, char *argv[])
 {
-	atexit(check_leaks);
+	// atexit(check_leaks);
 	if (argc > 4 && argc <= 6)
 	{
 		if (check_input(argv + 1))

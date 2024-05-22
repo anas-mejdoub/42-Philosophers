@@ -6,11 +6,27 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 11:24:05 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/22 19:13:24 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/22 19:48:34 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+int threads_creation(t_philos *philos)
+{
+
+	while (philos)
+	{
+		if (pthread_create(&philos->thread, NULL, (void *)action, (void *)philos) != 0)
+		{
+			write(2, "error while creating threads\n", 30);
+			kill_philos(philos->data->head);
+			return (1);
+		}
+		philos = philos->next;	
+	}
+	return (0);
+}
 
 int	simulation(char *data[])
 {
@@ -33,11 +49,13 @@ int	simulation(char *data[])
 	initial_data(philos, &shared_data);
 	init_mutex(&shared_data);
 	head = philos;
-	while (philos)
-	{
-		pthread_create(&philos->thread, NULL, (void *)action, (void *)philos);
-		philos = philos->next;
-	}
+	if (threads_creation(philos))
+		return (0);
+	// while (philos)
+	// {
+	// 	pthread_create(&philos->thread, NULL, (void *)action, (void *)philos);
+	// 	philos = philos->next;
+	// }
 	while (!shared_data.died)
 	{
 		head2 = head;
