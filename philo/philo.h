@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/22 11:35:45 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/22 19:12:32 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void					fill_philos(char *data[], t_philos **philos,
 int						check_input(char **data);
 void					initial_data(t_philos *philos, t_data *shared_data);
 void					init_mutex(t_data *data);
-void					*action(void *philos);
+void					*action(t_philos *philos);
 int						simulation(char *data[]);
 int						end_simulation(t_data *data);
 int						kill_philos(t_philos *philos);

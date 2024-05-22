@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 11:24:05 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/22 11:36:03 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/22 19:13:24 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ int	simulation(char *data[])
 	head = philos;
 	while (philos)
 	{
-		pthread_create(&philos->thread, NULL, action, (void *)philos);
+		pthread_create(&philos->thread, NULL, (void *)action, (void *)philos);
 		philos = philos->next;
 	}
 	while (!shared_data.died)
