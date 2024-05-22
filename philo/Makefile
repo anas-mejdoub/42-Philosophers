@@ -1,8 +1,8 @@
-SRCS = main.c
+SRCS = main.c initial.c parsing.c routine.c utils.c end_simulation.c simulation.c
 OBJBS = $(SRCS:.c=.o)
 NAME = philo
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -pthread#-fsanitize=address -g #-fsanitize=thread -g 
+CFLAGS = -Wall -Wextra -Werror -pthread #-fsanitize=thread -g#-fsanitize=address -g -fsanitize=thread -g 
 
 all : $(NAME)
 

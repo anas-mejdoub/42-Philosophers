@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/12 13:17:18 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/22 11:35:45 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@ typedef struct s_data
 	int					died;
 	long long			time;
 	pthread_mutex_t		print;
-	// pthread_mutex_t		meal;
 	pthread_mutex_t		death_mutex;
 	pthread_mutex_t		*forks;
 	t_philos			*head;
@@ -52,6 +51,27 @@ typedef struct s_philos
 }						t_philos;
 int						kill_philos(t_philos *philos);
 int						is_dead(t_philos *philos);
-int	condition(t_philos *philos);
-int	print(t_philos *philos, char *msg, int op);
+int						condition(t_philos *philos);
+int						print(t_philos *philos, char *msg, int op);
+long long				get_time(void);
+void					ft_sleep(long long time_to_sleep, t_philos *philos,
+							int think);
+int						ft_atoi(char *str);
+t_philos				*get_last_philo(t_philos *philos);
+t_philos				*new_philo(char *data[], int index,
+							t_data *shared_data);
+void					add_philo_back(t_philos **philos, t_philos *new);
+void					fill_philos(char *data[], t_philos **philos,
+							t_data *shared_data);
+int						check_input(char **data);
+void					initial_data(t_philos *philos, t_data *shared_data);
+void					init_mutex(t_data *data);
+void					*action(void *philos);
+int						simulation(char *data[]);
+int						end_simulation(t_data *data);
+int						kill_philos(t_philos *philos);
+void					unlock_all(t_philos *philos);
+void					free_destroy(t_philos *philos);
+int						is_dead(t_philos *philos);
+int						print(t_philos *philos, char *msg, int op);
 #endif
