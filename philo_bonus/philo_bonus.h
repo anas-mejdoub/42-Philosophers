@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/20 19:35:39 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/23 17:20:16 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,4 +64,5 @@ int						kill_philos(t_philos *philos);
 int						is_dead(t_philos *philos);
 int	condition(t_philos *philos);
 int	print(t_philos *philos, char *msg, int op);
+void kill_process(t_data *data);
 #endif

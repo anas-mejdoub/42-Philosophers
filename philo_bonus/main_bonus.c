@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/23 13:05:25 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/23 18:59:26 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,25 +123,25 @@ int	print(t_philos *philos, char *msg, int op)
 	int	mutex;
 
 	mutex = 0;
-	if (op == 3)
-	{
-		sem_wait(philos->data->print_sem);
-		printf("%lld %d %s", get_time()
-				- philos->data->time, philos->index, msg);
-		return (1);
-	}
 	sem_wait(philos->data->print_sem); 
 	if (op == 1)
+	{
+		
+		sem_wait(philos->data->die_sem);
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
+		sem_post(philos->data->die_sem);
+	}
 	else if (op == 2)
 	{
 		sem_wait(philos->meal_sem);
 		philos->last_meal = get_time();
 		sem_post(philos->meal_sem);
+		sem_wait(philos->data->die_sem);
 			printf("%lld %d %s%lld %d is eating\n", get_time()
 				- philos->data->time, philos->index, msg, get_time()
 				- philos->data->time, philos->index);
+		sem_post(philos->data->die_sem);
 			mutex = 1;
 	}
 	sem_post(philos->data->print_sem);
@@ -227,7 +227,6 @@ int condition (t_philos *philos)
 	if (get_time() >= philos->last_meal + philos->time_to_die)
 	{
 		sem_post(philos->meal_sem);
-		sem_wait(philos->data->die_sem);
 		return (1);
 	}
 	sem_post(philos->meal_sem);
@@ -236,16 +235,15 @@ int condition (t_philos *philos)
 
 void watcher(t_philos *philos)
 {
-	usleep(50 * 1000);
+	ft_sleep(50, philos, 0);
 	while (1)
 	{
 		if (condition(philos))
 		{
-			sem_wait(philos->data->print_sem);
+			sem_wait(philos->data->die_sem);
 			printf("%lld %d died\n", get_time() - philos->data->time,
 				philos->index);
 			sem_post(philos->data->death_sem);
-			while (1);
 		}
 		usleep(1000);
 	}
@@ -261,7 +259,7 @@ void	*action(t_philos *philos)
 	{
 		print(philos, "is thinking\n", 1);
 		cycle = 0;
-		usleep(4000);
+		ft_sleep(4, philos, 0);
 	}
 	while (1)
 	{
@@ -291,7 +289,7 @@ void	init_mutex(t_data *data)
 	data->print_sem = sem_open("/print", O_CREAT, 0777, 1);
 	data->death_sem = sem_open("/death", O_CREAT, 0777, 0);
 	data->begin_sem = sem_open("/begin", O_CREAT, 0777, 0);
-	data->die_sem = sem_open("/begin", O_CREAT, 0777, 1);
+	data->die_sem = sem_open("/die", O_CREAT, 0777, 1);
 	data->eats_sem = sem_open("/eat", O_CREAT, 0777, 0);
 	if (data->forks_sem == SEM_FAILED || data->print_sem == SEM_FAILED || data->death_sem == SEM_FAILED)
 	{
@@ -322,10 +320,12 @@ void	initial_data(t_philos *philos, t_data *shared_data)
 void kill_process(t_data *data)
 {
 	int i = 0;
+
+	usleep(100);
 	while (i < data->philos_number)
 	{
-		sem_close(get_by_index(data->head, i + 1)->meal_sem);
 		kill(data->arr[i], SIGKILL);
+		sem_close(get_by_index(data->head, i + 1)->meal_sem);
 		i++;
 	}
 }
@@ -353,6 +353,7 @@ int	simulation(char *data[])
     sem_unlink("/death");
     sem_unlink("/begin");
     sem_unlink("/eat");
+    sem_unlink("/die");
 	philos = NULL;
 	shared_data.philos_number = 0;
 	shared_data.died = 0;
@@ -399,14 +400,9 @@ int	simulation(char *data[])
 	sem_close(shared_data.begin_sem);
 	sem_close(shared_data.forks_sem);
 	sem_close(shared_data.death_sem);
+	sem_close(shared_data.die_sem);
 	sem_close(shared_data.print_sem);
 	j = 0;
-	// while (j < shared_data.philos_number)
-	// {
-	// 	sem_post(shared_data.eats_sem);
-	// 	j++;
-	// 	usleep(85);
-	// }
 	t_philos *tmp;
 	sem_close(shared_data.eats_sem);
 	while (shared_data.head)
