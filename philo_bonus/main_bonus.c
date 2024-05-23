@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/23 12:39:20 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/23 13:05:25 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,7 +237,6 @@ int condition (t_philos *philos)
 void watcher(t_philos *philos)
 {
 	usleep(50 * 1000);
-
 	while (1)
 	{
 		if (condition(philos))
@@ -258,7 +257,6 @@ void	*action(t_philos *philos)
 	int cycle = 1;
 	pthread_create(&philos->thread, NULL, (void *)watcher, (void *)philos);
 	pthread_detach(philos->thread);
-	// time_for_philo(philos);
 	if (philos->index > philos->data->philos_number / 2 && philos->data->philos_number != 1)
 	{
 		print(philos, "is thinking\n", 1);
