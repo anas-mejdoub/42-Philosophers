@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/22 20:47:11 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/23 12:39:20 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,13 +123,17 @@ int	print(t_philos *philos, char *msg, int op)
 	int	mutex;
 
 	mutex = 0;
-	sem_wait(philos->data->print_sem);
-	if (op == 1)
+	if (op == 3)
 	{
+		sem_wait(philos->data->print_sem);
+		printf("%lld %d %s", get_time()
+				- philos->data->time, philos->index, msg);
+		return (1);
+	}
+	sem_wait(philos->data->print_sem); 
+	if (op == 1)
 			printf("%lld %d %s", get_time() - philos->data->time, philos->index,
 				msg);
-		
-	}
 	else if (op == 2)
 	{
 		sem_wait(philos->meal_sem);
@@ -224,8 +228,6 @@ int condition (t_philos *philos)
 	{
 		sem_post(philos->meal_sem);
 		sem_wait(philos->data->die_sem);
-		// sem_post(philos->data->die_sem);
-		// sem_post(philos->data->die_sem);
 		return (1);
 	}
 	sem_post(philos->meal_sem);
@@ -234,7 +236,8 @@ int condition (t_philos *philos)
 
 void watcher(t_philos *philos)
 {
-	usleep(55 * 1000);
+	usleep(50 * 1000);
+
 	while (1)
 	{
 		if (condition(philos))
@@ -255,7 +258,7 @@ void	*action(t_philos *philos)
 	int cycle = 1;
 	pthread_create(&philos->thread, NULL, (void *)watcher, (void *)philos);
 	pthread_detach(philos->thread);
-	time_for_philo(philos);
+	// time_for_philo(philos);
 	if (philos->index > philos->data->philos_number / 2 && philos->data->philos_number != 1)
 	{
 		print(philos, "is thinking\n", 1);
@@ -364,6 +367,7 @@ int	simulation(char *data[])
 	initial_data(philos, &shared_data);
 	init_mutex(&shared_data);
 	head = philos;
+	shared_data.time = get_time();
 	while (philos)
 	{
 		philos->pid = fork();
@@ -373,9 +377,7 @@ int	simulation(char *data[])
 			exit (1);
 		}
 		else if (philos->pid == 0)
-		{
 			action((void *)philos);
-		}
 		else
 		{
 			shared_data.arr[i] = philos->pid;
@@ -401,12 +403,12 @@ int	simulation(char *data[])
 	sem_close(shared_data.death_sem);
 	sem_close(shared_data.print_sem);
 	j = 0;
-	while (j < shared_data.philos_number)
-	{
-		sem_post(shared_data.eats_sem);
-		j++;
-		// usleep(85);
-	}
+	// while (j < shared_data.philos_number)
+	// {
+	// 	sem_post(shared_data.eats_sem);
+	// 	j++;
+	// 	usleep(85);
+	// }
 	t_philos *tmp;
 	sem_close(shared_data.eats_sem);
 	while (shared_data.head)
@@ -440,7 +442,6 @@ int check_input(char **data)
 
 int	main(int argc, char *argv[])
 {
-	// atexit(check_leaks);
 	if (argc > 4 && argc <= 6)
 	{
 		if (check_input(argv + 1))
