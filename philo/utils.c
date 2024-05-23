@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 11:04:51 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/22 20:55:40 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/23 11:04:01 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,9 @@ long long	get_time(void)
 	return (time.tv_sec * 1000 + time.tv_usec / 1000);
 }
 
-void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
+void	ft_sleep(long long time_to_sleep, t_philos *philos, int think,
+		long long time)
 {
-	long long	time;
-
 	if (think == 1)
 	{
 		pthread_mutex_lock(&philos->data->print);
@@ -31,7 +30,6 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 			philos->index);
 		pthread_mutex_unlock(&philos->data->print);
 	}
-	time = get_time();
 	while (1)
 	{
 		if (time + time_to_sleep <= get_time())

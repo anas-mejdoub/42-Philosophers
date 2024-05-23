@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/22 19:12:32 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/23 11:05:02 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ int						condition(t_philos *philos);
 int						print(t_philos *philos, char *msg, int op);
 long long				get_time(void);
 void					ft_sleep(long long time_to_sleep, t_philos *philos,
-							int think);
+							int think, long long time);
 int						ft_atoi(char *str);
 t_philos				*get_last_philo(t_philos *philos);
 t_philos				*new_philo(char *data[], int index,

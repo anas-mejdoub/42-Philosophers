@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 19:21:02 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/22 19:37:10 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/23 11:05:49 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,6 @@ int	print(t_philos *philos, char *msg, int op)
 	}
 	pthread_mutex_unlock(&philos->data->print);
 	if (mutex)
-		ft_sleep(philos->time_to_eat, philos, 0);
+		ft_sleep(philos->time_to_eat, philos, 0, get_time());
 	return (1);
 }
