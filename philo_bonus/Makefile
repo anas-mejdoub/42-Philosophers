@@ -1,4 +1,4 @@
-SRC = main_bonus.c
+SRC = main_bonus.c end_simulation_bonus.c initialize_bonus.c parsing_bonus.c print_bonus.c routine_bonus.c simulation_bonus.c utils2_bonus.c utils_bonus.c
 
 OBJ=$(SRC:.c=.o)
 
