@@ -6,15 +6,13 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 15:47:19 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 15:49:11 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/24 16:14:42 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 
-
-
-int condition (t_philos *philos)
+int	condition(t_philos *philos)
 {
 	sem_wait(philos->meal_sem);
 	if (get_time() >= philos->last_meal + philos->time_to_die)
@@ -27,7 +25,7 @@ int condition (t_philos *philos)
 	return (0);
 }
 
-void watcher(t_philos *philos)
+void	watcher(t_philos *philos)
 {
 	ft_sleep(50, philos, 0);
 	while (1)
@@ -44,10 +42,13 @@ void watcher(t_philos *philos)
 
 void	*action(t_philos *philos)
 {
-	int cycle = 1;
+	int	cycle;
+
+	cycle = 1;
 	pthread_create(&philos->thread, NULL, (void *)watcher, (void *)philos);
 	pthread_detach(philos->thread);
-	if (philos->index > philos->data->philos_number / 2 && philos->data->philos_number != 1)
+	if (philos->index > philos->data->philos_number / 2
+		&& philos->data->philos_number != 1)
 	{
 		print(philos, "is thinking\n", 1);
 		cycle = 0;
@@ -59,7 +60,7 @@ void	*action(t_philos *philos)
 			print(philos, "is thinking\n", 1);
 		cycle++;
 		sem_wait(philos->data->forks_sem);
-		print(philos , "has taken a fork\n", 1);
+		print(philos, "has taken a fork\n", 1);
 		sem_wait(philos->data->forks_sem);
 		print(philos, "has taken a fork\n", 2);
 		philos->eating++;

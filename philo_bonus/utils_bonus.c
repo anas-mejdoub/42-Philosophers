@@ -6,15 +6,17 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 15:55:57 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 16:00:48 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/24 16:19:04 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 
-int ft_strlen(char *str)
+int	ft_strlen(char *str)
 {
-	int i = 0;
+	int	i;
+
+	i = 0;
 	while (str[i])
 	{
 		i++;
@@ -52,7 +54,8 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 	if (think == 1)
 	{
 		sem_wait(philos->data->print_sem);
-		printf("%lld %d is thinking\n", get_time() - philos->data->time, philos->index);
+		printf("%lld %d is thinking\n", get_time() - philos->data->time,
+			philos->index);
 		sem_post(philos->data->print_sem);
 	}
 	time = get_time();

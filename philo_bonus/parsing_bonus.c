@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 15:49:37 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 15:52:55 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/24 16:10:41 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,8 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 	new->meal_sem = sem_open(new->name_sem, O_CREAT, 0644, 1);
 	if (new->meal_sem == SEM_FAILED)
 	{
-		printf ("problem with sem\n");
-		exit (99);
+		printf("problem with sem\n");
+		exit(99);
 	}
 	new->right_fork = index;
 	new->left_fork = index + 1;
@@ -74,9 +74,11 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 	}
 }
 
-int check_input(char **data)
+int	check_input(char **data)
 {
-	int i = 0;
+	int	i;
+
+	i = 0;
 	while (data[i])
 	{
 		if (ft_atoi(data[i]) <= 0)
