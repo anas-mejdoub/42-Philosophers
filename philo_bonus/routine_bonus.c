@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 15:47:19 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 17:37:48 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/24 19:53:07 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@ int	condition(t_philos *philos)
 	sem_wait(philos->meal_sem);
 	if (get_time() >= philos->last_meal + philos->time_to_die)
 	{
-		// sem_wait(philos->data->die_sem);
 		sem_post(philos->meal_sem);
 		return (1);
 	}
