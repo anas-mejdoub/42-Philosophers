@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 11:08:31 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/22 11:35:19 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/24 20:43:27 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,20 @@ void	fill_philos(char *data[], t_philos **philos, t_data *shared_data)
 	}
 }
 
+int	ft_is_digit(char *num)
+{
+	int	i;
+
+	i = 0;
+	while (num[i])
+	{
+		if (num[i] < '0' || num[i] > '9')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 int	check_input(char **data)
 {
 	int	i;
@@ -66,7 +80,7 @@ int	check_input(char **data)
 	i = 0;
 	while (data[i])
 	{
-		if (ft_atoi(data[i]) <= 0)
+		if (ft_atoi(data[i]) <= 0 || !ft_is_digit(data[i]))
 			return (1);
 		i++;
 	}

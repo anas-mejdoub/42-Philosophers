@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 16:08:04 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/24 20:45:07 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,4 +87,5 @@ void					eats_end(t_data *data);
 int						get_nblen(int n);
 int						simulation(char *data[]);
 long long				get_time(void);
+int						ft_is_digit(char *num);
 #endif

@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 15:49:37 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 16:10:41 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/24 20:45:37 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ int	check_input(char **data)
 	i = 0;
 	while (data[i])
 	{
-		if (ft_atoi(data[i]) <= 0)
+		if (ft_atoi(data[i]) <= 0 || !ft_is_digit(data[i]))
 			return (1);
 		i++;
 	}
