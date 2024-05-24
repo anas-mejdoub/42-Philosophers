@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 15:55:57 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 16:19:04 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/24 17:35:38 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ void	ft_sleep(long long time_to_sleep, t_philos *philos, int think)
 		{
 			break ;
 		}
-		usleep(50);
+		usleep(85);
 	}
 }
 
