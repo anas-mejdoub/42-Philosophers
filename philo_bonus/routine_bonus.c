@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 15:47:19 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 19:53:07 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/25 11:38:24 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,9 +65,7 @@ void	*action(t_philos *philos)
 		print(philos, "has taken a fork\n", 2);
 		philos->eating++;
 		if (philos->eating == philos->data->each_eat)
-		{
 			sem_post(philos->data->eats_sem);
-		}
 		sem_post(philos->data->forks_sem);
 		sem_post(philos->data->forks_sem);
 		print(philos, "is sleeping\n", 1);

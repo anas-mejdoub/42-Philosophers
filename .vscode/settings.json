@@ -58,6 +58,7 @@
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
     "philo.h": "c",
-    "unistd.h": "c"
+    "unistd.h": "c",
+    "philo_bonus.h": "c"
   }
 }
