@@ -27,7 +27,7 @@ The "Philosophers" project is a classic synchronization problem that illustrates
     cd philosophers
     ```
 
-2. **Compile the Project**:
+2. **inside the philo directory compile The Mandatory Part:**:
     ```sh
     make
     ```
@@ -69,7 +69,7 @@ The bonus part of the project includes the use of processes and semaphores to ma
 
 ### How to Run the Bonus Part
 
-1. **insde the philo_bonus directory compile the Bonus Part :**:
+1. **inside the philo_bonus directory compile the Bonus Part :**:
     ```sh
     make
     ```
