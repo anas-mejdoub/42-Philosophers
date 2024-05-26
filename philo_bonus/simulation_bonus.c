@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 16:01:19 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/26 12:32:21 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/26 14:44:28 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,9 +46,9 @@ void	process_creation(t_philos *philos)
 	}
 }
 
-void	_end_(t_philos *philos)
+void	_end_(t_philos *philos, t_data *data)
 {
-	t_philos	**tmp;
+	t_philos	*tmp;
 
 	tmp = NULL;
 	sem_wait(philos->data->death_sem);
@@ -59,16 +59,16 @@ void	_end_(t_philos *philos)
 	sem_close(philos->data->die_sem);
 	sem_close(philos->data->print_sem);
 	sem_close(philos->data->eats_sem);
-	while (philos->data->head)
+	while (philos)
 	{
-		sem_unlink(philos->data->head->name_sem);
-		tmp = &philos->data->head;
-		free(philos->data->head->name_sem);
-		philos->data->head = philos->data->head->next;
-		free(*tmp);
-		*tmp = NULL;
+		sem_unlink(philos->name_sem);
+		tmp = philos;
+		free(philos->name_sem);
+		philos = philos->next;
+		free(tmp);
+		tmp = NULL;
 	}
-	free(philos->data->arr);
+	free(data->arr);
 }
 
 void	optional_param(t_philos *philos)
@@ -85,7 +85,6 @@ int	simulation(char *data[])
 {
 	t_philos	*philos;
 	t_data		shared_data;
-	t_philos	*head;
 	int			i;
 
 	i = 0;
@@ -100,10 +99,9 @@ int	simulation(char *data[])
 	fill_philos(data, &philos, &shared_data);
 	initial_data(philos, &shared_data);
 	open_sem(&shared_data);
-	head = philos;
 	shared_data.time = get_time();
 	process_creation(philos);
 	optional_param(philos);
-	_end_(philos);
+	_end_(philos, &shared_data);
 	return (0);
 }

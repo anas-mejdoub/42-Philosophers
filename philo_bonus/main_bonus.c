@@ -6,16 +6,11 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:12:13 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 16:13:26 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/26 14:49:27 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
-
-void	check_leaks(void)
-{
-	system("leaks philo");
-}
 
 int	main(int argc, char *argv[])
 {
