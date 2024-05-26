@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 15:47:19 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/25 11:38:24 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/26 11:28:05 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,17 @@ void	watcher(t_philos *philos)
 	}
 }
 
+void	think_first(t_philos *philos, int *cycle)
+{
+	if (philos->index > philos->data->philos_number / 2
+		&& philos->data->philos_number != 1)
+	{
+		print(philos, "is thinking\n", 1);
+		*cycle = 0;
+		ft_sleep(4, philos, 0);
+	}
+}
+
 void	*action(t_philos *philos)
 {
 	int	cycle;
@@ -47,13 +58,7 @@ void	*action(t_philos *philos)
 	cycle = 1;
 	pthread_create(&philos->thread, NULL, (void *)watcher, (void *)philos);
 	pthread_detach(philos->thread);
-	if (philos->index > philos->data->philos_number / 2
-		&& philos->data->philos_number != 1)
-	{
-		print(philos, "is thinking\n", 1);
-		cycle = 0;
-		ft_sleep(4, philos, 0);
-	}
+	think_first(philos, &cycle);
 	while (1)
 	{
 		if (cycle)

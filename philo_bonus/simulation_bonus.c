@@ -6,11 +6,78 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 16:01:19 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 16:18:41 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/26 11:50:47 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
+
+void	semaphore_unlink(void)
+{
+	sem_unlink("/forks");
+	sem_unlink("/print");
+	sem_unlink("/death");
+	sem_unlink("/begin");
+	sem_unlink("/eat");
+	sem_unlink("/die");
+}
+
+void	process_creation(t_philos *philos)
+{
+	int	i;
+
+	i = 0;
+	while (philos)
+	{
+		philos->pid = fork();
+		if (philos->pid == -1)
+		{
+			printf("problem at fork !\n");
+			exit(1);
+		}
+		else if (philos->pid == 0)
+			action((void *)philos);
+		else
+		{
+			philos->data->arr[i] = philos->pid;
+			i++;
+			philos = philos->next;
+		}
+	}
+}
+
+void	_end_(t_philos *philos)
+{
+	t_philos	*tmp;
+
+	sem_wait(philos->data->death_sem);
+	kill_process(philos->data);
+	sem_close(philos->data->begin_sem);
+	sem_close(philos->data->forks_sem);
+	sem_close(philos->data->death_sem);
+	sem_close(philos->data->die_sem);
+	sem_close(philos->data->print_sem);
+	sem_close(philos->data->eats_sem);
+	while (philos->data->head)
+	{
+		tmp = philos->data->head;
+		sem_unlink(philos->data->head->name_sem);
+		free(philos->data->head->name_sem);
+		philos->data->head = philos->data->head->next;
+		free(tmp);
+	}
+	free(philos->data->arr);
+}
+
+void	optional_param(t_philos *philos)
+{
+	if (philos->data->each_eat != -1)
+	{
+		pthread_create(&philos->data->eat_thread, NULL, (void *)eats_end,
+			(void *)philos->data);
+		pthread_detach(philos->data->eat_thread);
+	}
+}
 
 int	simulation(char *data[])
 {
@@ -18,15 +85,9 @@ int	simulation(char *data[])
 	t_data		shared_data;
 	t_philos	*head;
 	int			i;
-	t_philos	*tmp;
 
 	i = 0;
-	sem_unlink("/forks");
-	sem_unlink("/print");
-	sem_unlink("/death");
-	sem_unlink("/begin");
-	sem_unlink("/eat");
-	sem_unlink("/die");
+	semaphore_unlink();
 	philos = NULL;
 	shared_data.philos_number = 0;
 	shared_data.died = 0;
@@ -40,45 +101,8 @@ int	simulation(char *data[])
 	open_sem(&shared_data);
 	head = philos;
 	shared_data.time = get_time();
-	while (philos)
-	{
-		philos->pid = fork();
-		if (philos->pid == -1)
-		{
-			printf("problem at fork !\n");
-			exit(1);
-		}
-		else if (philos->pid == 0)
-			action((void *)philos);
-		else
-		{
-			shared_data.arr[i] = philos->pid;
-			i++;
-			philos = philos->next;
-		}
-	}
-	if (shared_data.each_eat != -1)
-	{
-		pthread_create(&shared_data.eat_thread, NULL, (void *)eats_end,
-			(void *)&shared_data);
-		pthread_detach(shared_data.eat_thread);
-	}
-	sem_wait(shared_data.death_sem);
-	kill_process(&shared_data);
-	sem_close(shared_data.begin_sem);
-	sem_close(shared_data.forks_sem);
-	sem_close(shared_data.death_sem);
-	sem_close(shared_data.die_sem);
-	sem_close(shared_data.print_sem);
-	sem_close(shared_data.eats_sem);
-	while (shared_data.head)
-	{
-		tmp = shared_data.head;
-		sem_unlink(shared_data.head->name_sem);
-		free(shared_data.head->name_sem);
-		shared_data.head = shared_data.head->next;
-		free(tmp);
-	}
-	free(shared_data.arr);
+	process_creation(philos);
+	optional_param(philos);
+	_end_(philos);
 	return (0);
 }
