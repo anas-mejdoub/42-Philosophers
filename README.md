@@ -69,7 +69,7 @@ The bonus part of the project includes the use of processes and semaphores to ma
 
 ### How to Run the Bonus Part
 
-1. **insde the philo_bonus Compile the Bonus Project**:
+1. **insde the philo_bonus directory compile the Bonus Part :**:
     ```sh
     make
     ```
