@@ -44,8 +44,8 @@ The "Philosophers" project is a classic synchronization problem that illustrates
 
 ## Project Structure
 
-- **src/**: Source code files
-- **include/**: Header files
+- **philo/**: The Mandatory Part Source Files
+- **philo_bonus/**: The Bonus Part Source Files
 - **Makefile**: Compilation instructions
 
 ## Example Output
