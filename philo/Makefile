@@ -2,7 +2,7 @@ SRCS = main.c initial.c parsing.c routine.c utils.c end_simulation.c simulation.
 OBJBS = $(SRCS:.c=.o)
 NAME = philo
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -pthread #-fsanitize=thread -g#-fsanitize=address -g 2 
+CFLAGS = -Wall -Wextra -Werror -pthread 
 
 all : $(NAME)
 
