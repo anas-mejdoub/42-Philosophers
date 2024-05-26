@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 15:49:37 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 20:45:37 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/26 12:28:33 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,6 @@ t_philos	*new_philo(char *data[], int index, t_data *shared_data)
 		printf("problem with sem\n");
 		exit(99);
 	}
-	new->right_fork = index;
-	new->left_fork = index + 1;
 	new->eating = 0;
 	new->next = NULL;
 	return (new);

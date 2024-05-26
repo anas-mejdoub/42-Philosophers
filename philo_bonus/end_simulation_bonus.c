@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 16:03:09 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/25 11:22:29 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/26 12:42:36 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,5 @@ void	eats_end(t_data *data)
 		i++;
 	}
 	sem_post(data->death_sem);
-	while (1)
-		;
+	return ;
 }

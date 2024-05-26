@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 16:01:19 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/26 11:50:47 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/26 12:32:21 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,8 +48,9 @@ void	process_creation(t_philos *philos)
 
 void	_end_(t_philos *philos)
 {
-	t_philos	*tmp;
+	t_philos	**tmp;
 
+	tmp = NULL;
 	sem_wait(philos->data->death_sem);
 	kill_process(philos->data);
 	sem_close(philos->data->begin_sem);
@@ -60,11 +61,12 @@ void	_end_(t_philos *philos)
 	sem_close(philos->data->eats_sem);
 	while (philos->data->head)
 	{
-		tmp = philos->data->head;
 		sem_unlink(philos->data->head->name_sem);
+		tmp = &philos->data->head;
 		free(philos->data->head->name_sem);
 		philos->data->head = philos->data->head->next;
-		free(tmp);
+		free(*tmp);
+		*tmp = NULL;
 	}
 	free(philos->data->arr);
 }
@@ -96,7 +98,6 @@ int	simulation(char *data[])
 	else
 		shared_data.each_eat = -1;
 	fill_philos(data, &philos, &shared_data);
-	get_by_index(philos, ft_atoi(data[0]))->left_fork = 0;
 	initial_data(philos, &shared_data);
 	open_sem(&shared_data);
 	head = philos;

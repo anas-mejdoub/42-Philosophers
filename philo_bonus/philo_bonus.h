@@ -6,7 +6,7 @@
 /*   By: amejdoub <amejdoub@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:20:33 by amejdoub          #+#    #+#             */
-/*   Updated: 2024/05/24 20:45:07 by amejdoub         ###   ########.fr       */
+/*   Updated: 2024/05/26 12:28:10 by amejdoub         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,6 @@ typedef struct s_philos
 	long long			time_to_sleep;
 	long long			time_to_die;
 	int					eating;
-	int					left_fork;
-	int					right_fork;
 	long long			last_meal;
 	sem_t				*meal_sem;
 	sem_t				*thread_sem;
