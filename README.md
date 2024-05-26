@@ -69,13 +69,16 @@ The bonus part of the project includes the use of processes and semaphores to ma
 
 ### How to Run the Bonus Part
 
-1. **Compile the Bonus Project**:
+1. **insde the philo_bonus Compile the Bonus Project**:
     ```sh
-    make bonus
+    make
     ```
 
 2. **Run the Bonus Simulation**:
     ```sh
     ./philo_bonus number_of_philosophers time_to_die time_to_eat time_to_sleep [number_of_times_each_philosopher_must_eat]
     ```
-
+   For example:
+    ```sh
+    ./philo_bonus 5 800 200 200
+    ```
