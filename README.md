@@ -23,7 +23,7 @@ The "Philosophers" project is a classic synchronization problem that illustrates
 
 1. **Clone the Repository**:
     ```sh
-    git clone https://github.com/anas-mejdoub/philosophers.git
+    git clone https://github.com/anas-mejdoub/42-Cursus-Philosophers.git
     cd philosophers
     ```
 
