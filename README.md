@@ -24,7 +24,7 @@ The "Philosophers" project is a classic synchronization problem that illustrates
 1. **Clone the Repository**:
     ```sh
     git clone https://github.com/anas-mejdoub/42-Cursus-Philosophers.git
-    cd philosophers
+    cd 42-Cursus-Philosophers
     ```
 
 2. **inside the philo directory compile The Mandatory Part**:
